@@ -28,7 +28,13 @@ export default {
       const etat = crypto.randomUUID();
       const dest = new URL("https://github.com/login/oauth/authorize");
       dest.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
-      dest.searchParams.set("scope", "repo,user");
+      // Portee minimale. Le depot etant PUBLIC, public_repo suffit :
+      // la portee "repo" aurait donne acces en ecriture a TOUS les depots
+      // prives de chaque personne qui se connecte, ce qui est hors de
+      // proportion pour changer une date de concert.
+      // read:user au lieu de user : le CMS affiche un nom et un avatar,
+      // il n’a aucun besoin de MODIFIER le profil GitHub.
+      dest.searchParams.set("scope", "public_repo,read:user");
       dest.searchParams.set("state", etat);
       return new Response(null, {
         status: 302,

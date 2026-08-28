@@ -127,6 +127,11 @@ Dans cet ordre.
 5. **Déployer le Worker** : coller `workers/oauth/index.js` dans un nouveau Worker via
    le tableau de bord, puis définir en **Secret** `GITHUB_CLIENT_ID`,
    `GITHUB_CLIENT_SECRET` et `ORIGINE_ADMIN`.
+
+   **Le Worker n’est PAS déployé depuis ce dépôt.** Modifier
+   `workers/oauth/index.js` ici ne change rien au Worker en service : il faut
+   recoller le fichier dans le tableau de bord et redéployer. Le fichier du dépôt
+   est la source de référence, pas la source de déploiement.
    *wrangler n’est pas utilisable ici, Node n’étant pas installé sur le poste.*
 
    **`ORIGINE_ADMIN` doit être exactement l’origine qui sert `/admin/`.** C’est la
