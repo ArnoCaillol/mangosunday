@@ -10,7 +10,7 @@
 
 backend:
   name: github
-  repo: REMPLACER-PAR/mangosunday      # ← compte-github/depot
+  repo: ArnoCaillol/mangosunday        # ← compte-github/depot
   branch: main
   base_url: https://REMPLACER.workers.dev   # ← Worker de relais OAuth
 

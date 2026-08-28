@@ -96,9 +96,12 @@ tools/serve.ps1  serveur local, non publié
 
 ### Remplacer le logo
 
-Écraser `public/assets/img/logo.svg`. Aucune modification de code. Conserver un format
-carré et un fond opaque. Le fichier actuel est un **badge provisoire** et porte la
-mention correspondante.
+Écraser `public/assets/img/logo.webp`. Aucune modification de code. Conserver un
+format carré. Le fichier actuel est le logo définitif du groupe, à fond beige opaque :
+il se pose sur le crème de la page en tuile arrondie, comme une vignette imprimée.
+
+Si un jour une version détourée à fond transparent est disponible, la déposer sous le
+même nom donnera un rendu plus net sur le crème — sans changement de code non plus.
 
 ---
 
@@ -108,7 +111,7 @@ Dans cet ordre.
 
 1. **Acheter `mangosunday.com`** après avoir vérifié sa disponibilité, ainsi que celle
    du nom sur Spotify, Bandcamp et Instagram.
-2. **Créer le dépôt GitHub** et y pousser ce projet.
+2. ~~**Créer le dépôt GitHub**~~ — fait : <https://github.com/ArnoCaillol/mangosunday>
 3. **Cloudflare Pages** : connecter le dépôt.
    - Commande de build : **laisser vide**
    - Répertoire de sortie : **`public`**
@@ -119,7 +122,9 @@ Dans cet ordre.
    le tableau de bord, puis définir en **Secret** `GITHUB_CLIENT_ID`,
    `GITHUB_CLIENT_SECRET` et `ORIGINE_ADMIN` (`https://mangosunday.com`).
    *wrangler n'est pas utilisable ici, Node n'étant pas installé sur le poste.*
-6. **Renseigner `public/admin/config.yml`** : `repo` et `base_url`.
+6. **Renseigner `base_url`** dans `public/admin/config.yml` avec l’URL du Worker.
+   `repo` est déjà renseigné. C’est la **dernière valeur `REMPLACER`** du projet, et
+   le seul verrou restant avant que `/admin/` puisse s’authentifier.
 7. **Cloudflare Email Routing** : `contact@mangosunday.com` vers une boîte existante.
    Gratuit. Attention : cela **reçoit** mais n'envoie pas — répondre depuis l'adresse
    du domaine demande une configuration séparée.
@@ -139,8 +144,9 @@ et sur fond tireté.
 - [ ] `[TITRE DU MORCEAU]` et son lien — via l'administration
 - [ ] `[VIDÉO LIVE À VENIR]` — via l'administration
 - [ ] Liens des plateformes et réseaux — via l'administration
-- [ ] `logo.svg` — remplacer le badge provisoire
-- [ ] `og.png` — régénérer une fois le vrai logo en place
+- [x] `logo.webp` — logo définitif en place
+- [x] `og.png` — régénéré avec le vrai logo
+- [ ] Version détourée du logo (fond transparent) — souhaitable, pas bloquant
 - [ ] Mentions légales : éditeur, statut, adresse, directeur de la publication
 - [ ] Vérifier le JSON-LD avec l'outil de test des résultats enrichis de Google
 - [ ] Contrôler l'aperçu de partage sur messagerie et réseaux
@@ -154,3 +160,9 @@ et sur fond tireté.
   premier téléversement réel.
 - Les polices sont en sous-ensemble latin. Un sous-ensemble français les ramènerait de
   16 Ko à environ 10 Ko chacune.
+- `og.png` pèse 358 Ko. Sans impact sur le premier rendu — seuls les robots d'aperçu
+  la téléchargent — mais au-dessus du seuil au-delà duquel certaines messageries
+  cessent de générer l'aperçu automatiquement. Un JPEG la ramènerait vers 80 Ko ;
+  Chrome headless n'exporte qu'en PNG et aucun convertisseur n'est disponible ici.
+- Le logo est à fond beige opaque, posé en tuile arrondie sur le crème. Une version
+  détourée à fond transparent donnerait un rendu plus net.
