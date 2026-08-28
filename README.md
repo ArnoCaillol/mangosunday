@@ -133,12 +133,6 @@ Dans cet ordre.
    `main`, comme le reste : rien à recoller dans le tableau de bord. Seuls les
    secrets s’y définissent, une fois pour toutes.
 
-   **`ORIGINE_ADMIN` n’existe plus** et peut être supprimée du tableau de bord si
-   elle y traîne. Le relais partageant l’origine de l’administration, la cible du
-   `postMessage` est `location.origin`, connue du navigateur. C’était la classe de
-   panne la plus pénible du montage — une origine mal saisie faisait jeter le
-   message sans erreur, et la fenêtre tournait sans fin. Elle a disparu.
-
    Le jour du branchement du domaine, une seule chose à changer côté
    authentification : l’**URL de rappel** de l’application OAuth GitHub, qui devient
    `https://mangosunday.com/callback`.

@@ -13,11 +13,6 @@
    Variables a definir en « Secret » dans le tableau de bord :
      GITHUB_CLIENT_ID
      GITHUB_CLIENT_SECRET
-
-   Deux secrets, et c'est tout. ORIGINE_ADMIN n'est plus necessaire :
-   le relais partageant l'origine de l'administration, la cible du
-   postMessage est location.origin, connue du navigateur lui-meme.
-   La variable peut etre supprimee du tableau de bord.
    ═══════════════════════════════════════════════════════════════ */
 
 export default {
