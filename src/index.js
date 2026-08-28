@@ -134,20 +134,37 @@ function pageRetour(resultat) {
 (function () {
   var msg = ${JSON.stringify(JSON.stringify(resultat))};
   var ok = ${etat === "success"};
+  var m = document.getElementById('m');
+
+  // Sans opener, le jeton n'a personne a qui etre transmis. Cela
+  // arrive si la page qui a ouvert cette popup porte un
+  // Cross-Origin-Opener-Policy: same-origin — il coupe le lien des
+  // que la popup navigue vers une autre origine, ici GitHub.
+  // On le DIT, au lieu de se fermer en silence : une fermeture muette
+  // laisse le CMS conclure a une interruption sans jamais en donner
+  // la raison.
+  if (!window.opener) {
+    m.textContent = "La fenêtre qui a lancé la connexion n'est plus " +
+      "accessible (window.opener absent). Cause probable : un en-tête " +
+      "Cross-Origin-Opener-Policy sur la page d'administration. " +
+      "Le jeton a bien été obtenu mais ne peut pas être transmis.";
+    return;
+  }
+
   function envoyer() {
-    if (window.opener) {
-      window.opener.postMessage(
-        'authorization:github:${etat}:' + msg, window.location.origin);
-    }
+    window.opener.postMessage(
+      'authorization:github:${etat}:' + msg, window.location.origin);
   }
   window.addEventListener('message', envoyer, false);
   envoyer();
+
   if (ok) {
-    setTimeout(function () { window.close(); }, 3000);
+    // Sveltia ferme la popup lui-meme des qu'il a traite le message.
+    // Ce delai n'est qu'un filet de securite s'il ne le fait pas.
+    setTimeout(function () { window.close(); }, 5000);
   } else {
-    document.getElementById('m').textContent =
-      "Échec de l'authentification : " + ${JSON.stringify(echec)} +
-      " — vous pouvez fermer cette fenêtre.";
+    m.textContent = "Échec de l'authentification : " +
+      ${JSON.stringify(echec)} + " — vous pouvez fermer cette fenêtre.";
   }
 })();
 <\/script>

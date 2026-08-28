@@ -12,15 +12,22 @@
 # et l'administration afficherait une page blanche.
 # La CSP est donc posee page par page. Toute nouvelle page HTML doit
 # recevoir la sienne ici, sinon elle sera servie sans CSP.
+#
+# MEME LOGIQUE POUR Cross-Origin-Opener-Policy, ET POUR UNE AUTRE
+# RAISON. COOP « same-origin » sur la page qui OUVRE une popup coupe
+# le lien window.opener des que cette popup navigue vers une autre
+# origine. L'administration ouvre une popup vers GitHub : au retour,
+# window.opener valait null, le jeton n'avait plus personne a qui
+# etre transmis, et la connexion echouait sans erreur explicite.
+# COOP ne va donc que sur les pages publiques, jamais sur /admin/.
 # ─────────────────────────────────────────────────────────────
 
-# Entetes de securite communs — sans CSP, voir ci-dessus.
+# Entetes de securite communs — sans CSP ni COOP, voir ci-dessus.
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
-  Cross-Origin-Opener-Policy: same-origin
   # TEMPORAIRE — recette avant le branchement du domaine.
   # A retirer le jour ou mangosunday.com est branche, sinon le site
   # reste invisible des moteurs de recherche.
@@ -29,12 +36,15 @@
 # ── CSP du site public, une regle par page HTML ──
 /
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; frame-src https://open.spotify.com https://www.youtube-nocookie.com https://bandcamp.com
+  Cross-Origin-Opener-Policy: same-origin
 
 /mentions-legales
   Content-Security-Policy: default-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; script-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+  Cross-Origin-Opener-Policy: same-origin
 
 /confidentialite
   Content-Security-Policy: default-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; script-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+  Cross-Origin-Opener-Policy: same-origin
 
 # ── Administration : hors index, et CSP volontairement plus souple.
 # Sveltia est charge depuis un CDN et dialogue avec l'API GitHub.
