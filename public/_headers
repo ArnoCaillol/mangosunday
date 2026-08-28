@@ -1,28 +1,46 @@
 # ─────────────────────────────────────────────────────────────
-# Cloudflare Pages — en-tetes HTTP
+# Cloudflare — en-tetes HTTP
 # La page publique n'appelle AUCUN tiers avant un clic. La CSP
 # le rend structurel : seuls les lecteurs sont autorises en iframe,
 # et ils ne sont injectes qu'au clic de l'utilisateur.
+#
+# ATTENTION — LA CSP N'EST PAS DANS LE BLOC GLOBAL, ET C'EST VOULU.
+# Quand plusieurs regles correspondent a une requete, Cloudflare
+# CUMULE les en-tetes au lieu de les remplacer. Le navigateur qui
+# recoit deux CSP applique leur INTERSECTION : une CSP « /* » stricte
+# rendrait toute CSP plus permissive sur /admin/ totalement inerte,
+# et l'administration afficherait une page blanche.
+# La CSP est donc posee page par page. Toute nouvelle page HTML doit
+# recevoir la sienne ici, sinon elle sera servie sans CSP.
 # ─────────────────────────────────────────────────────────────
 
-# TEMPORAIRE — recette sur *.pages.dev, avant le branchement du domaine.
-# Retirer la ligne X-Robots-Tag ci-dessous le jour ou mangosunday.com est
-# branche, sinon le site reste invisible des moteurs de recherche.
+# Entetes de securite communs — sans CSP, voir ci-dessus.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; frame-src https://open.spotify.com https://www.youtube-nocookie.com https://bandcamp.com
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
   Cross-Origin-Opener-Policy: same-origin
+  # TEMPORAIRE — recette avant le branchement du domaine.
+  # A retirer le jour ou mangosunday.com est branche, sinon le site
+  # reste invisible des moteurs de recherche.
   X-Robots-Tag: noindex
 
-# L'administration doit dialoguer avec l'API GitHub et charger Sveltia
-# depuis un CDN : CSP volontairement plus souple, et hors index.
+# ── CSP du site public, une regle par page HTML ──
+/
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; frame-src https://open.spotify.com https://www.youtube-nocookie.com https://bandcamp.com
+
+/mentions-legales
+  Content-Security-Policy: default-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; script-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+
+/confidentialite
+  Content-Security-Policy: default-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; script-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+
+# ── Administration : hors index, et CSP volontairement plus souple.
+# Sveltia est charge depuis un CDN et dialogue avec l'API GitHub.
 /admin/*
   X-Robots-Tag: noindex, nofollow
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; font-src 'self' data: https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://*.githubusercontent.com; connect-src 'self' https://api.github.com https://github.com https://unpkg.com https://cdn.jsdelivr.net; frame-ancestors 'none'; base-uri 'none'
-  Referrer-Policy: strict-origin-when-cross-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; font-src 'self' data: https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://*.githubusercontent.com https://avatars.githubusercontent.com; connect-src 'self' https://api.github.com https://github.com https://unpkg.com https://cdn.jsdelivr.net; frame-ancestors 'none'; base-uri 'none'
 
 # Les polices sont figees : cache long et immuable.
 /assets/fonts/*
