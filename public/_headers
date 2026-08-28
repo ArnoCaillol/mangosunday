@@ -1,0 +1,33 @@
+# ─────────────────────────────────────────────────────────────
+# Cloudflare Pages — en-tetes HTTP
+# La page publique n'appelle AUCUN tiers avant un clic. La CSP
+# le rend structurel : seuls les lecteurs sont autorises en iframe,
+# et ils ne sont injectes qu'au clic de l'utilisateur.
+# ─────────────────────────────────────────────────────────────
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; frame-src https://open.spotify.com https://www.youtube-nocookie.com https://bandcamp.com
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+  Cross-Origin-Opener-Policy: same-origin
+
+# L'administration doit dialoguer avec l'API GitHub et charger Sveltia
+# depuis un CDN : CSP volontairement plus souple, et hors index.
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; font-src 'self' data: https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://*.githubusercontent.com; connect-src 'self' https://api.github.com https://github.com https://unpkg.com https://cdn.jsdelivr.net; frame-ancestors 'none'; base-uri 'none'
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Les polices sont figees : cache long et immuable.
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/img/*
+  Cache-Control: public, max-age=604800
+
+# Le contenu edite doit apparaitre vite : cache court.
+/content/*
+  Cache-Control: public, max-age=300
+  Content-Type: application/json; charset=utf-8

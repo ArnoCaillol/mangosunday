@@ -1,0 +1,145 @@
+# ═══════════════════════════════════════════════════════════════
+# Sveltia CMS — schema d'edition
+# Ce fichier EST le perimetre d'edition : cinq blocs, rien de plus.
+# La structure de la page, la direction artistique, les mentions
+# legales et les metadonnees SEO ne sont volontairement pas ici.
+#
+# Format compatible Decap CMS : si Sveltia devait s'arreter, il
+# suffit de changer le script charge dans admin/index.html.
+# ═══════════════════════════════════════════════════════════════
+
+backend:
+  name: github
+  repo: REMPLACER-PAR/mangosunday      # ← compte-github/depot
+  branch: main
+  base_url: https://REMPLACER.workers.dev   # ← Worker de relais OAuth
+
+# La racine publiee est public/ : media_folder pointe dans le depot,
+# public_folder est le chemin vu par le navigateur.
+media_folder: "public/assets/img/galerie"
+public_folder: "/assets/img/galerie"
+
+locale: "fr"
+
+# Pas de brouillons : deux a quatre editions par mois, un flux de
+# validation serait une lourdeur sans contrepartie.
+publish_mode: simple
+
+collections:
+  # ── 1, 2, 3, 4 : le fichier site.json ────────────────────────
+  - name: site
+    label: "Le site"
+    files:
+      - name: general
+        label: "Écoute, vidéo, bio et bandeau"
+        file: "public/content/site.json"
+        description: >-
+          Les liens d'écoute, la vidéo live, la bio courte et le bandeau
+          d'annonce. Laisser un champ vide fait disparaître le bloc
+          correspondant sur le site.
+        fields:
+          - name: bandeau
+            label: "Bandeau « à la une »"
+            widget: object
+            collapsed: true
+            fields:
+              - { name: actif, label: "Afficher le bandeau", widget: boolean, default: false }
+              - { name: texte, label: "Texte", widget: string, required: false,
+                  hint: "Une phrase courte. Exemple : Nouveau single disponible." }
+              - { name: lien,  label: "Lien", widget: string, required: false,
+                  pattern: ['^$|^https?://', "Doit commencer par https:// ou rester vide"] }
+
+          - name: ecoute
+            label: "Écoute"
+            widget: object
+            fields:
+              - { name: titre_phare, label: "Titre du morceau mis en avant", widget: string,
+                  hint: "Le nom affiché sur le bouton principal de la page." }
+              - { name: url_phare, label: "Lien du morceau mis en avant", widget: string, required: false,
+                  pattern: ['^$|^https?://', "Doit commencer par https:// ou rester vide"],
+                  hint: "Un lien Spotify se lit directement dans la page. Les autres ouvrent un nouvel onglet." }
+              - { name: plateforme, label: "Plateforme du morceau", widget: select, default: spotify,
+                  options: [spotify, bandcamp, youtube] }
+              - name: liens
+                label: "Liens des plateformes et réseaux"
+                widget: object
+                collapsed: true
+                fields:
+                  - { name: spotify,   label: Spotify,     widget: string, required: false, pattern: ['^$|^https?://', "https:// ou vide"] }
+                  - { name: bandcamp,  label: Bandcamp,    widget: string, required: false, pattern: ['^$|^https?://', "https:// ou vide"] }
+                  - { name: youtube,   label: YouTube,     widget: string, required: false, pattern: ['^$|^https?://', "https:// ou vide"] }
+                  - { name: instagram, label: Instagram,   widget: string, required: false, pattern: ['^$|^https?://', "https:// ou vide"] }
+                  - { name: deezer,    label: Deezer,      widget: string, required: false, pattern: ['^$|^https?://', "https:// ou vide"] }
+                  - { name: apple,     label: Apple Music, widget: string, required: false, pattern: ['^$|^https?://', "https:// ou vide"] }
+
+          - name: video
+            label: "Vidéo live"
+            widget: object
+            fields:
+              - { name: id_youtube, label: "Lien ou identifiant YouTube", widget: string, required: false,
+                  hint: "Coller le lien complet de la vidéo. Vide : la section affiche un placeholder." }
+              - { name: titre, label: "Titre de la vidéo", widget: string, required: false }
+
+          - name: bio_courte
+            label: "Bio courte"
+            widget: text
+            hint: >-
+              Environ 50 mots, affichés en haut de la section « Le groupe ».
+              La bio longue n'est pas modifiable ici : elle est écrite dans la
+              page pour être lue par les moteurs de recherche.
+
+  # ── 5 : les dates ────────────────────────────────────────────
+  - name: dates
+    label: "Dates de concert"
+    files:
+      - name: liste
+        label: "Toutes les dates"
+        file: "public/content/dates.json"
+        description: >-
+          Inutile de supprimer une date passée : elle disparaît toute seule
+          du site le lendemain. À partir de deux dates à venir, la section
+          remonte automatiquement en haut de la page.
+        fields:
+          - name: dates
+            label: "Dates"
+            label_singular: "Date"
+            widget: list
+            summary: "{{fields.date}} — {{fields.salle}}, {{fields.ville}}"
+            fields:
+              - { name: date,  label: "Date",  widget: datetime, format: "YYYY-MM-DD",
+                  date_format: "DD/MM/YYYY", time_format: false, picker_utc: false }
+              - { name: heure, label: "Heure", widget: string, required: false,
+                  pattern: ['^$|^\d{2}:\d{2}$', "Format 20:30, ou vide"] }
+              - { name: salle, label: "Salle", widget: string }
+              - { name: ville, label: "Ville", widget: string }
+              - { name: pays,  label: "Pays",  widget: string, default: "FR",
+                  hint: "Code à deux lettres. FR, BE, CH…" }
+              - { name: url_billets, label: "Lien billetterie", widget: string, required: false,
+                  pattern: ['^$|^https?://', "https:// ou vide"] }
+              - { name: complet, label: "Complet", widget: boolean, default: false }
+
+  # ── 6 : la galerie ───────────────────────────────────────────
+  - name: galerie
+    label: "Galerie photo"
+    files:
+      - name: photos
+        label: "Photos de scène"
+        file: "public/content/galerie.json"
+        description: >-
+          Huit photos au maximum. IMPORTANT : redimensionner les photos
+          avant de les envoyer — une photo prise au téléphone pèse plusieurs
+          mégaoctets et ralentit le site pour tout le monde.
+        fields:
+          - name: photos
+            label: "Photos"
+            label_singular: "Photo"
+            widget: list
+            max: 8
+            summary: "{{fields.alt}}"
+            fields:
+              - { name: fichier, label: "Image", widget: image,
+                  media_library: { config: { max_file_size: 1500000 } },
+                  hint: "1,5 Mo maximum. Format paysage de préférence." }
+              - { name: alt, label: "Description de l'image", widget: string,
+                  hint: "Décrire ce qu'on voit. Sert aux personnes aveugles et au référencement." }
+              - { name: credit, label: "Crédit photo", widget: string, required: false }

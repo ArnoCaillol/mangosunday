@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Mango Sunday — surf rock &amp; pop-rock</title>
+<meta name="description" content="Mango Sunday, groupe de surf rock et pop-rock aux influences 60s-70s. Écoutez un morceau, regardez-nous en live, contactez-nous pour une date.">
+<link rel="canonical" href="https://mangosunday.com/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mango Sunday">
+<meta property="og:title" content="Mango Sunday — surf rock &amp; pop-rock">
+<meta property="og:description" content="Surf rock et pop-rock aux influences 60s-70s. Écoutez, regardez, contactez-nous pour une date.">
+<meta property="og:url" content="https://mangosunday.com/">
+<meta property="og:image" content="https://mangosunday.com/assets/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F6EEDC">
+
+<!-- Seules les deux fontes visibles au-dessus du pli sont prechargees.
+     Bevan est volontairement hors du chemin critique : elle ne sert qu'aux
+     titres de section, tous situes sous le pli. -->
+<link rel="preload" href="/assets/fonts/libre-franklin-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/libre-franklin-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css">
+
+<script type="application/ld+json" id="ld-groupe">
+{
+  "@context": "https://schema.org",
+  "@type": "MusicGroup",
+  "@id": "https://mangosunday.com/#groupe",
+  "name": "Mango Sunday",
+  "alternateName": "Mango-Sunday",
+  "url": "https://mangosunday.com/",
+  "logo": "https://mangosunday.com/assets/img/logo.svg",
+  "image": "https://mangosunday.com/assets/img/og.png",
+  "genre": ["Surf rock", "Pop rock", "Garage rock"],
+  "description": "Groupe de surf rock et pop-rock aux influences 60s-70s.",
+  "email": "contact@mangosunday.com"
+}
+</script>
+</head>
+
+<body>
+<a class="evitement" href="#ecoute">Aller au contenu</a>
+
+<main>
+
+  <!-- ①  PREMIER ÉCRAN — ÉCOUTE ─────────────────────────────
+       Contrainte dure : le bouton d'ecoute doit rester visible sans
+       defilement sur 360x640, bandeau active. Rien d'autre ici. -->
+  <section class="hero" id="ecoute">
+    <div class="hero-in">
+
+      <h1 class="hero-logo">
+        <img src="/assets/img/logo.svg" alt="Mango Sunday" width="208" height="208" fetchpriority="high" decoding="sync">
+      </h1>
+
+      <p class="baseline">Surf rock &amp; pop-rock &mdash; <span class="ph">[VILLE]</span></p>
+
+      <!-- Bandeau « a la une » : masque par defaut, ne reserve aucun espace. -->
+      <a class="bandeau" data-bandeau hidden href="#0"><span data-bandeau-texte></span></a>
+
+      <div class="hero-actions">
+        <div class="lecteur-phare" data-lecteur-audio>
+          <button class="btn btn-primaire" type="button" data-facade-audio disabled>
+            <span class="tri" aria-hidden="true"></span>
+            <span>Écouter <span class="ph" data-titre-phare>[TITRE DU MORCEAU]</span></span>
+          </button>
+        </div>
+        <a class="btn btn-fantome" href="#booking">Booking &amp; contact</a>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="bandes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+  <!-- ②  ÉCOUTER AILLEURS ───────────────────────────────── -->
+  <section class="bloc" id="plateformes" data-bloc-plateformes hidden>
+    <div class="bloc-in">
+      <h2>Écouter ailleurs</h2>
+      <ul class="plateformes" data-plateformes></ul>
+    </div>
+  </section>
+
+  <!-- ③  VIDÉO LIVE — BANDE SOMBRE ──────────────────────────
+       Seule section sur fond nuit. C'est le seul endroit ou l'ocre
+       atteint 7,2:1 et peut donc etre typographique. -->
+  <section class="bloc nuit" id="live">
+    <div class="bloc-in">
+      <h2>Vidéo live</h2>
+      <p class="chapo">La preuve de scène. Un ampli à lampes, une pédale de reverb, et personne pour rattraper les fausses notes.</p>
+      <div class="cadre-video" data-lecteur-video>
+        <div class="facade facade-video">
+          <div class="facade-bandes" aria-hidden="true"><i></i><i></i><i></i></div>
+          <span class="facade-soleil" aria-hidden="true"></span>
+          <button class="lecture" type="button" data-facade-video disabled>
+            <span class="tri tri-lecture" aria-hidden="true"></span>
+          </button>
+          <p class="facade-vide" data-video-vide><span class="ph">[VIDÉO LIVE À VENIR]</span></p>
+        </div>
+      </div>
+      <div class="bandes bandes-nuit" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+  </section>
+
+  <!-- ④  LE GROUPE ────────────────────────────────────────── -->
+  <section class="bloc" id="groupe">
+    <div class="bloc-in">
+      <h2>Le groupe</h2>
+
+      <p class="chapo" data-bio-courte><span class="ph">[BIO COURTE — 50 mots]</span></p>
+
+      <!-- Bio longue : STATIQUE et non editable. C'est elle qui porte le
+           texte indexable de la page. Ne pas la deplacer dans le CMS. -->
+      <details class="bio-longue">
+        <summary>Lire la bio complète</summary>
+        <div>
+          <p><span class="ph">[BIO LONGUE — 200 mots]</span></p>
+          <p>Remplacer ce paragraphe par la bio longue. C&rsquo;est le texte le plus utile au référencement de la page : il est écrit en dur dans le HTML, servi à la première requête, et il n&rsquo;est volontairement pas modifiable depuis l&rsquo;administration.</p>
+        </div>
+      </details>
+
+      <h3>Qui joue</h3>
+      <ul class="membres">
+        <li><span class="prenom ph">[PRÉNOM]</span><span class="instrument ph">[instrument]</span></li>
+        <li><span class="prenom ph">[PRÉNOM]</span><span class="instrument ph">[instrument]</span></li>
+        <li><span class="prenom ph">[PRÉNOM]</span><span class="instrument ph">[instrument]</span></li>
+        <li><span class="prenom ph">[PRÉNOM]</span><span class="instrument ph">[instrument]</span></li>
+      </ul>
+
+      <!-- Galerie : disparait entierement si vide. -->
+      <div class="galerie-enveloppe" data-bloc-galerie hidden>
+        <h3>Sur scène</h3>
+        <ul class="galerie" data-galerie></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑤  BOOKING ──────────────────────────────────────────── -->
+  <section class="bloc booking" id="booking">
+    <div class="bloc-in">
+      <h2>Booking &amp; contact</h2>
+      <p class="chapo">Une date, un festival, une première partie&nbsp;? Une seule adresse, et on répond.</p>
+      <p class="adresse">
+        <a class="btn btn-primaire" href="mailto:contact@mangosunday.com">contact@mangosunday.com</a>
+      </p>
+      <p class="menu">Pour gagner du temps&nbsp;: la ville de départ, la date envisagée, la jauge de la salle et si le backline est fourni.</p>
+    </div>
+  </section>
+
+  <!-- ⑥  DATES ────────────────────────────────────────────────
+       content.js remonte cette section au-dessus de « Le groupe »
+       des qu'il y a deux dates a venir ou plus. -->
+  <section class="bloc" id="dates">
+    <div class="bloc-in">
+      <h2>Dates</h2>
+      <ol class="dates" data-dates hidden></ol>
+      <div class="etat-vide" data-dates-vide>
+        <b>Pas de date annoncée pour le moment.</b>
+        <span>Les prochaines seront ici. En attendant, on annonce tout sur Instagram.</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ⑦  PIED DE PAGE ───────────────────────────────────────── -->
+<footer class="pied">
+  <div class="bloc-in">
+    <div class="bandes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    <ul class="reseaux" data-reseaux></ul>
+    <nav class="legal" aria-label="Informations légales">
+      <a href="/mentions-legales.html">Mentions légales</a>
+      <a href="/confidentialite.html">Confidentialité</a>
+    </nav>
+    <p class="copy">Mango Sunday</p>
+  </div>
+</footer>
+
+<script type="module" src="/js/content.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+# ═══════════════════════════════════════════════════════════════
+# Compression des images de galerie
+#
+# NOTE ASSUMÉE : cette action introduit un build step, ce que le
+# cahier des charges excluait. Décision prise en connaissance de
+# cause pour absorber le risque réel — une photo prise au téléphone
+# pèse plusieurs mégaoctets et le CMS ne sait pas la compresser.
+#
+# Elle n'a jamais à tourner en local. Le site reste servi tel quel.
+# ═══════════════════════════════════════════════════════════════
+name: Optimiser les images de galerie
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/assets/img/galerie/**'
+
+permissions:
+  contents: write
+
+# Une seule exécution à la fois : deux téléversements rapprochés ne
+# doivent pas produire deux commits concurrents sur le même dossier.
+concurrency:
+  group: optimisation-images
+  cancel-in-progress: false
+
+jobs:
+  optimiser:
+    # GARDE-FOU ANTI-BOUCLE : l'action commit dans la branche qu'elle
+    # surveille. Sans cette condition, chaque commit en déclenche un
+    # autre indéfiniment.
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Installer sharp
+        run: npm install --no-save sharp@0.33.5
+
+      - name: Redimensionner, compresser, dériver
+        run: node .github/scripts/optimise-images.mjs
+
+      - name: Publier le résultat
+        run: |
+          if [ -z "$(git status --porcelain public/assets/img/galerie)" ]; then
+            echo "Rien à faire : les images sont déjà optimisées."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/img/galerie
+          git commit -m "Optimisation automatique des images de galerie"
+          git push

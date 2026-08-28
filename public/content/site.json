@@ -1,0 +1,25 @@
+{
+  "bandeau": {
+    "actif": false,
+    "texte": "",
+    "lien": ""
+  },
+  "ecoute": {
+    "titre_phare": "[TITRE DU MORCEAU]",
+    "url_phare": "",
+    "plateforme": "spotify",
+    "liens": {
+      "spotify": "",
+      "bandcamp": "",
+      "youtube": "",
+      "instagram": "",
+      "deezer": "",
+      "apple": ""
+    }
+  },
+  "video": {
+    "id_youtube": "",
+    "titre": ""
+  },
+  "bio_courte": "[BIO COURTE — 50 mots]"
+}

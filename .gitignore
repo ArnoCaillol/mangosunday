@@ -1,0 +1,5 @@
+# Rien a compiler, rien a installer : ce depot ne contient que des sources servies.
+node_modules/
+.DS_Store
+Thumbs.db
+*.log

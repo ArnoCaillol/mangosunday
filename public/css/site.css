@@ -1,0 +1,496 @@
+/* ═══════════════════════════════════════════════════════════════
+   Mango Sunday — feuille de style unique
+   Charte validee a l'etape 2. Theme clair unique et assume :
+   c'est l'identite du groupe, il n'y a pas de version sombre.
+   Toutes les couleurs sont peintes explicitement.
+
+   TROIS REGLES DE COULEUR, non negociables :
+   1. Sur fond clair, le texte est encre. Jamais mangue ni orange.
+   2. Sur fond nuit, la mangue devient typographique (7,2:1).
+   3. La bordure encre de 3 px du bouton n'est pas decorative :
+      un bouton mangue sur sable ne contraste qu'a 1,65:1, la
+      bordure est ce qui satisfait le critere WCAG 1.4.11.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Polices auto-hebergees. Aucun appel a un CDN : un appel
+      dynamique transmettrait l'IP du visiteur a un tiers. ── */
+@font-face{
+  font-family:"Libre Franklin"; font-style:normal; font-weight:400;
+  src:url("/assets/fonts/libre-franklin-400.woff2") format("woff2");
+  font-display:swap;
+}
+@font-face{
+  font-family:"Libre Franklin"; font-style:normal; font-weight:600;
+  src:url("/assets/fonts/libre-franklin-600.woff2") format("woff2");
+  font-display:swap;
+}
+@font-face{
+  font-family:"Libre Franklin"; font-style:normal; font-weight:700;
+  src:url("/assets/fonts/libre-franklin-700.woff2") format("woff2");
+  font-display:swap;
+}
+/* Bevan : hors du chemin critique, uniquement sous le pli. */
+@font-face{
+  font-family:"Bevan"; font-style:normal; font-weight:400;
+  src:url("/assets/fonts/bevan-400.woff2") format("woff2");
+  font-display:swap;
+}
+
+:root{
+  --creme:#F6EEDC;
+  --sable:#E7D6B4;
+  --encre:#1E1A16;
+  --nuit:#1E1A16;
+  --mangue:#E29A26;
+  --orange:#D2652F;
+  --terre:#B5563A;
+  --terre-encre:#99422A;   /* texte d'accent sur fond clair — 5,7:1 */
+  --brun-encre:#6E523C;    /* texte secondaire — 6,2:1 sur creme */
+  --blanc-casse:#FDFAF2;
+  --nuit-texte:#D6CAB4;
+  --filet:#D8C7A4;
+  --filet-fort:#BFA97F;
+
+  --deplacement:4px;       /* decalage de l'ombre dure — repere d'impression */
+  --serif:"Bevan",Georgia,"Times New Roman",serif;
+  --sans:"Libre Franklin","Helvetica Neue",Arial,sans-serif;
+
+  /* Grain : bruit SVG de ~300 octets, repete en fond de section,
+     SOUS le texte. Jamais en calque fixe plein ecran. */
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html{ -webkit-text-size-adjust:100%; scroll-behavior:smooth }
+
+body{
+  margin:0;
+  background:var(--creme);
+  color:var(--encre);
+  font-family:var(--sans);
+  font-size:17px;
+  line-height:1.6;
+  font-weight:400;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+@media (max-width:560px){ body{font-size:16px} }
+
+img{max-width:100%; height:auto; display:block}
+
+/* ── Lien d'evitement ── */
+.evitement{
+  position:absolute; left:-9999px; top:0; z-index:99;
+  background:var(--mangue); color:var(--encre);
+  border:3px solid var(--encre); border-radius:0 0 8px 0;
+  padding:12px 18px; font-weight:700; text-decoration:none;
+}
+.evitement:focus{left:0}
+
+/* ── Focus : jamais porte par la seule couleur ── */
+:focus-visible{
+  outline:3px solid var(--encre);
+  outline-offset:3px;
+  border-radius:2px;
+}
+.nuit :focus-visible,.facade :focus-visible{ outline-color:var(--mangue) }
+
+/* ── Placeholders : impossibles a confondre avec du contenu reel ── */
+.ph{
+  display:inline-block;
+  border:2px dashed var(--terre-encre);
+  border-radius:4px;
+  padding:1px 7px 2px;
+  color:var(--terre-encre);
+  font-weight:600;
+  font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;
+  font-size:.88em;
+  background:rgba(153,66,42,.06);
+}
+.nuit .ph{ color:var(--mangue); border-color:var(--mangue); background:rgba(226,154,38,.1) }
+
+/* ═══ TYPOGRAPHIE ═══ */
+h1,h2,h3{ margin:0; text-wrap:balance }
+h2{
+  font-family:var(--serif); font-weight:400;
+  font-size:clamp(1.65rem,5.4vw,2.5rem); line-height:1.06;
+  letter-spacing:-.01em;
+}
+h3{
+  font-family:var(--sans); font-weight:600;
+  font-size:1.1rem; letter-spacing:.01em;
+  margin:34px 0 12px;
+}
+p{margin:0 0 1em; max-width:62ch}
+p:last-child{margin-bottom:0}
+a{color:var(--terre-encre); text-underline-offset:.18em; text-decoration-thickness:1px}
+strong{font-weight:700}
+
+.chapo{
+  font-size:1.13em; line-height:1.5; color:var(--brun-encre);
+  max-width:58ch; margin-top:14px;
+}
+.nuit .chapo{ color:var(--nuit-texte) }
+
+/* ═══ ① PREMIER ÉCRAN ═══════════════════════════════════════
+   Budget vertical verifie a 360x640, bandeau ACTIF :
+   32 + 208 + 40 + 58 + 74 + 58 = 470 px. Marge : 170 px, laissee
+   volontairement pour que le bloc suivant depasse et signale la suite. */
+.hero{
+  position:relative;
+  padding:32px 0 40px;
+  background:var(--creme);
+}
+
+/* ── Grain : couche dediee, SOUS le texte ──────────────────────
+   Il doit passer par un pseudo-element : pose directement en
+   background-image, le bruit s'affiche a pleine opacite et noie
+   la couleur de fond. Sur fond clair on multiplie, sur fond nuit
+   on eclaircit — multiplier sur du noir ne se verrait pas. */
+.hero::after,.booking::after,.nuit::after{
+  content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:var(--grain); background-repeat:repeat;
+}
+.hero::after,.booking::after{ opacity:.06; mix-blend-mode:multiply }
+.nuit::after{ opacity:.09; mix-blend-mode:screen }
+.hero-in{
+  position:relative; z-index:1;
+  max-width:1080px; margin:0 auto; padding:0 22px;
+}
+.hero-logo{ margin:0 }
+.hero-logo img{
+  width:min(208px,58vw); height:auto;
+  border-radius:12px;
+}
+.baseline{
+  margin:14px 0 0;
+  font-size:1.05rem; font-weight:600;
+  letter-spacing:.02em; color:var(--brun-encre);
+  max-width:none;
+}
+
+.bandeau{
+  display:flex; align-items:center; flex-wrap:wrap; gap:6px 9px;
+  margin:14px 0 0; padding:9px 14px;
+  min-height:44px; max-width:min(44ch,100%);
+  background:var(--mangue); color:var(--encre);
+  border:2px solid var(--encre); border-radius:8px;
+  font-weight:600; font-size:.95rem; text-decoration:none;
+  box-shadow:3px 3px 0 0 var(--terre);
+}
+/* Sans min-width:0, un libelle long force le conteneur flex a
+   deborder au lieu de passer a la ligne. */
+.bandeau > span{ min-width:0 }
+.bandeau::before{
+  content:"À la une";
+  font-size:9.5px; font-weight:700; letter-spacing:.12em;
+  text-transform:uppercase; padding:3px 7px 4px;
+  border:1.5px solid var(--encre); border-radius:3px;
+  background:var(--blanc-casse); white-space:nowrap; flex:none;
+}
+.bandeau[hidden]{ display:none }
+
+.hero-actions{
+  margin-top:18px;
+  display:flex; flex-direction:column; align-items:flex-start; gap:10px;
+}
+
+/* ── Bouton : vocabulaire de badge ── */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:11px;
+  font-family:var(--sans); font-weight:700;
+  font-size:1.02rem; letter-spacing:.06em; text-transform:uppercase;
+  padding:14px 24px; min-height:56px;
+  border:3px solid var(--encre); border-radius:9px;
+  text-decoration:none; cursor:pointer;
+  background:var(--mangue); color:var(--encre);
+  box-shadow:var(--deplacement) var(--deplacement) 0 0 var(--terre);
+  transition:background .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.btn-primaire:hover{
+  background:var(--orange);
+  box-shadow:2px 2px 0 0 var(--terre);
+  transform:translate(2px,2px);
+}
+.btn-primaire:active{ box-shadow:0 0 0 0 var(--terre); transform:translate(4px,4px) }
+.btn[disabled]{ opacity:.55; cursor:default; box-shadow:2px 2px 0 0 var(--filet-fort) }
+.btn .ph{ text-transform:none; letter-spacing:0 }
+
+.btn-fantome{
+  background:transparent; box-shadow:none;
+  border-width:2px; min-height:48px;
+  font-size:.9rem; letter-spacing:.08em;
+}
+.btn-fantome:hover{ background:var(--sable) }
+
+.tri{
+  width:0; height:0; flex:none;
+  border-style:solid; border-width:8px 0 8px 13px;
+  border-color:transparent transparent transparent var(--encre);
+}
+
+/* ── Lecteur phare : l'iframe remplace le bouton en place ── */
+.lecteur-phare{ width:100%; max-width:520px }
+/* Le titre du morceau est de longueur inconnue : le bouton occupe
+   toute la largeur disponible et le libelle passe a la ligne plutot
+   que de deborder. */
+.lecteur-phare > .btn{ width:100%; max-width:100% }
+.lecteur-phare > .btn > span{ min-width:0 }
+.lecteur-phare iframe{
+  width:100%; height:152px; border:3px solid var(--encre);
+  border-radius:9px; display:block; background:var(--sable);
+}
+
+/* ═══ MOTIF DE BANDES ═══════════════════════════════════════
+      Cinq aplats francs, epaisseur croissante et largeur
+      decroissante : l'ordre exact du degrade du logo. */
+.bandes{
+  display:flex; flex-direction:column; gap:3px;
+  max-width:1080px; margin:0 auto; padding:26px 22px;
+}
+.bandes i{ display:block; border-radius:1px; transform-origin:left center }
+.bandes i:nth-child(1){ height:3px;  background:var(--mangue); width:100% }
+.bandes i:nth-child(2){ height:5px;  background:var(--mangue); width:88% }
+.bandes i:nth-child(3){ height:7px;  background:var(--orange); width:72% }
+.bandes i:nth-child(4){ height:9px;  background:var(--orange); width:54% }
+.bandes i:nth-child(5){ height:12px; background:var(--terre);  width:34% }
+
+/* Progressive enhancement : sans JS, aucun data-anim, les bandes
+   sont visibles. content.js pose data-anim puis .vu. */
+.bandes[data-anim] i{ transform:scaleX(0); transition:transform .5s cubic-bezier(.2,.7,.3,1) }
+.bandes[data-anim].vu i{ transform:scaleX(1) }
+.bandes[data-anim].vu i:nth-child(2){ transition-delay:.07s }
+.bandes[data-anim].vu i:nth-child(3){ transition-delay:.14s }
+.bandes[data-anim].vu i:nth-child(4){ transition-delay:.21s }
+.bandes[data-anim].vu i:nth-child(5){ transition-delay:.28s }
+
+/* ═══ BLOCS ═══ */
+.bloc{ padding:34px 0 40px; position:relative }
+.bloc-in{ max-width:1080px; margin:0 auto; padding:0 22px; position:relative; z-index:1 }
+.bloc[hidden]{ display:none }
+
+/* ── ② Plateformes ── */
+.plateformes{
+  list-style:none; margin:18px 0 0; padding:0;
+  display:flex; flex-wrap:wrap; gap:10px;
+}
+.plateformes a{
+  display:inline-flex; align-items:center; min-height:44px;
+  padding:10px 16px;
+  border:2px solid var(--encre); border-radius:8px;
+  background:var(--blanc-casse); color:var(--encre);
+  font-weight:600; font-size:.92rem; text-decoration:none;
+  box-shadow:3px 3px 0 0 var(--sable);
+  transition:background .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.plateformes a:hover{
+  background:var(--mangue);
+  box-shadow:1px 1px 0 0 var(--terre);
+  transform:translate(2px,2px);
+}
+
+/* ── ③ Bande sombre ── */
+.nuit{
+  background:var(--nuit);
+  color:var(--blanc-casse);
+  padding:46px 0 50px;
+  /* La diagonale du logo, utilisee UNE SEULE FOIS sur toute la page.
+     2,5 degres au maximum, aucun texte a moins de 40 px du bord. */
+  clip-path:polygon(0 2.2vw, 100% 0, 100% 100%, 0 calc(100% - 2.2vw));
+  margin:10px 0;
+}
+.nuit h2{ color:var(--blanc-casse) }
+.nuit .bandes{ padding:30px 22px 0 }
+
+.cadre-video{ margin-top:22px; max-width:760px }
+.facade{
+  position:relative; aspect-ratio:16/9;
+  border:3px solid var(--encre); border-radius:10px; overflow:hidden;
+  background:var(--sable);
+  display:flex; align-items:center; justify-content:center;
+}
+.facade-bandes{ position:absolute; inset:auto 0 0 0; display:flex; flex-direction:column; gap:4px }
+.facade-bandes i{ display:block; height:12px }
+.facade-bandes i:nth-child(1){ background:var(--mangue) }
+.facade-bandes i:nth-child(2){ background:var(--orange) }
+.facade-bandes i:nth-child(3){ background:var(--terre) }
+.facade-soleil{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:clamp(56px,11vw,96px); aspect-ratio:1; border-radius:50%;
+  background:var(--mangue); border:3px solid var(--encre);
+}
+.lecture{
+  position:relative; z-index:2;
+  width:72px; height:72px; border-radius:50%;
+  background:var(--blanc-casse); border:3px solid var(--encre);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--deplacement) var(--deplacement) 0 0 var(--encre);
+  transition:box-shadow .15s ease, transform .15s ease;
+}
+.lecture:hover{ box-shadow:2px 2px 0 0 var(--encre); transform:translate(2px,2px) }
+.lecture[disabled]{ opacity:.5; cursor:default }
+.tri-lecture{ border-width:12px 0 12px 18px; margin-left:5px }
+.facade-vide{
+  position:absolute; z-index:3; bottom:14%; margin:0;
+  font-size:.82rem;
+}
+.cadre-video iframe{
+  width:100%; aspect-ratio:16/9; height:auto; display:block;
+  border:3px solid var(--encre); border-radius:10px; background:#000;
+}
+
+/* ── ④ Le groupe ── */
+.bio-longue{
+  margin-top:20px; max-width:64ch;
+  border:2px solid var(--filet-fort); border-radius:8px;
+  background:var(--blanc-casse);
+}
+.bio-longue summary{
+  cursor:pointer; padding:12px 16px; min-height:44px;
+  display:flex; align-items:center;
+  font-weight:600; font-size:.95rem;
+}
+.bio-longue > div{ padding:0 16px 14px }
+.bio-longue[open] summary{ border-bottom:1px solid var(--filet) }
+
+.membres{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px;
+  max-width:820px;
+}
+.membres li{
+  border:2px solid var(--encre); border-radius:8px;
+  background:var(--blanc-casse); padding:12px 14px;
+  box-shadow:3px 3px 0 0 var(--sable);
+}
+.membres .prenom{ display:block; font-weight:700; font-size:1rem }
+.membres .instrument{ display:block; margin-top:4px; font-size:.87rem; color:var(--brun-encre) }
+
+.galerie{
+  list-style:none; margin:0; padding:0;
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px;
+}
+.galerie li{ margin:0 }
+.galerie img,.galerie picture{
+  width:100%; aspect-ratio:3/2; object-fit:cover;
+  border:2px solid var(--encre); border-radius:8px;
+  background:var(--sable);
+}
+.galerie figcaption{ font-size:.78rem; color:var(--brun-encre); margin-top:5px }
+
+/* ── ⑤ Booking ── */
+.booking{ background:var(--sable) }
+.booking .adresse{ margin:22px 0 0 }
+.booking .adresse .btn{ text-transform:none; letter-spacing:.01em; font-size:1.05rem; word-break:break-word }
+.booking .menu{ margin-top:18px; font-size:.92rem; color:var(--brun-encre) }
+
+/* ── ⑥ Dates ── */
+.dates{ list-style:none; margin:20px 0 0; padding:0; display:flex; flex-direction:column; gap:10px; max-width:760px }
+.dates[hidden]{ display:none }
+.date{
+  display:grid; grid-template-columns:74px 1fr auto; gap:14px; align-items:center;
+  border:2px solid var(--encre); border-radius:8px;
+  background:var(--blanc-casse); padding:12px 15px;
+  box-shadow:3px 3px 0 0 var(--sable);
+}
+.date .jour{ text-align:center; border-right:2px solid var(--encre); padding-right:12px }
+.date .jour b{
+  display:block; font-family:var(--serif); font-size:1.55rem; line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.date .jour span{
+  display:block; margin-top:4px;
+  font-size:10px; font-weight:700; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--terre-encre);
+}
+.date .salle{ font-weight:600; font-size:.98rem; display:block }
+.date .lieu{ font-size:.86rem; color:var(--brun-encre); display:block }
+.date .billets{
+  display:inline-flex; align-items:center; min-height:44px; padding:9px 14px;
+  border:2px solid var(--encre); border-radius:7px;
+  background:var(--mangue); color:var(--encre);
+  font-weight:700; font-size:.8rem; letter-spacing:.06em; text-transform:uppercase;
+  text-decoration:none; white-space:nowrap;
+}
+.date .complet{
+  font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--terre-encre); white-space:nowrap;
+}
+@media (max-width:560px){
+  .date{ grid-template-columns:64px 1fr; row-gap:10px }
+  .date .billets,.date .complet{ grid-column:1 / -1; justify-self:start }
+}
+
+.etat-vide{
+  margin-top:20px; max-width:56ch;
+  border:2px dashed var(--filet-fort); border-radius:8px;
+  background:var(--sable); padding:18px 20px;
+}
+.etat-vide[hidden]{ display:none }
+.etat-vide b{ display:block; font-weight:700; font-size:1rem }
+.etat-vide span{ display:block; margin-top:5px; font-size:.9rem; color:var(--brun-encre) }
+
+/* ── ⑦ Pied de page ── */
+.pied{ padding:10px 0 46px; background:var(--creme) }
+.pied .bandes{ padding:0 22px 24px }
+.reseaux{ list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:10px }
+.reseaux a{
+  display:inline-flex; align-items:center; min-height:44px; padding:9px 15px;
+  border:2px solid var(--encre); border-radius:8px;
+  background:var(--blanc-casse); color:var(--encre);
+  font-weight:600; font-size:.88rem; text-decoration:none;
+}
+.reseaux a:hover{ background:var(--mangue) }
+.legal{ margin-top:22px; display:flex; flex-wrap:wrap; gap:8px 20px }
+.legal a{ font-size:.87rem; color:var(--brun-encre); min-height:44px; display:inline-flex; align-items:center }
+.copy{
+  margin-top:10px; font-family:var(--serif); font-size:.95rem;
+  color:var(--brun-encre); letter-spacing:.02em;
+}
+
+/* ═══ RESPONSIVE ═══
+   Deux points de rupture seulement. Alignement a gauche partout :
+   le badge est deja symetrique, la page ne doit pas l'etre. */
+@media (min-width:900px){
+  .hero{ padding:56px 0 48px }
+  /* Le logo occupe la colonne de gauche sur toute la hauteur ; le
+     reste s'empile a droite. Sans placement explicite, le placement
+     automatique renvoie le bandeau sous le logo. */
+  .hero-in{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    grid-template-rows:auto auto auto;
+    column-gap:44px; align-items:center;
+  }
+  .hero-logo{ grid-column:1; grid-row:1 / -1 }
+  .baseline{ grid-column:2; grid-row:1 }
+  .bandeau{ grid-column:2; grid-row:2 }
+  .hero-actions{ grid-column:2; grid-row:3 }
+  .hero-logo img{ width:248px }
+  .baseline{ margin-top:0; font-size:1.2rem }
+  .hero-actions{ flex-direction:row; align-items:center; flex-wrap:wrap; gap:14px }
+  .lecteur-phare{ width:auto }
+  h3{ font-size:1.15rem }
+}
+
+/* ═══ MOUVEMENT REDUIT ═══
+   Aucune fonctionnalite ne depend du mouvement. */
+@media (prefers-reduced-motion:reduce){
+  html{ scroll-behavior:auto }
+  *,*::before,*::after{
+    transition-duration:.01ms !important;
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+  }
+  .bandes[data-anim] i{ transform:scaleX(1) }
+  .btn-primaire:hover,.plateformes a:hover,.lecture:hover{ transform:none }
+}
+
+/* ═══ IMPRESSION ═══ */
+@media print{
+  .evitement,.facade,.bandes{ display:none }
+  body{ background:#fff; color:#000; font-size:11pt }
+  .nuit{ background:#fff; color:#000; clip-path:none }
+  .nuit h2,.nuit .chapo{ color:#000 }
+}
