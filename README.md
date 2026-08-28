@@ -153,10 +153,10 @@ et sur fond tireté.
 - [ ] `[VILLE]` — baseline du premier écran, **et** `<title>` + méta-description
 - [ ] `[BIO COURTE]` — via l'administration
 - [ ] `[BIO LONGUE]` — dans `index.html`, section « Le groupe »
-- [ ] `[PRÉNOM]` et `[instrument]` × 4 — dans `index.html`
-- [ ] `[TITRE DU MORCEAU]` et son lien — via l'administration
-- [ ] `[VIDÉO LIVE À VENIR]` — via l'administration
-- [ ] Liens des plateformes et réseaux — via l'administration
+- [x] `[PRÉNOM]` et `[instrument]` × 4 — dans `index.html`
+- [x] `[TITRE DU MORCEAU]` et son lien — via l'administration
+- [x] `[VIDÉO LIVE À VENIR]` — via l'administration
+- [x] Liens des plateformes et réseaux — via l'administration
 - [x] `logo.webp` — logo définitif en place
 - [x] `og.png` — régénéré avec le vrai logo
 - [ ] Version détourée du logo (fond transparent) — souhaitable, pas bloquant
