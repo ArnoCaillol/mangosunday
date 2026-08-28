@@ -123,14 +123,24 @@ Dans cet ordre.
      du bloc `/*` le jour du branchement, sinon le site reste invisible des
      moteurs de recherche.
 4. **Application OAuth GitHub** (Settings → Developer settings → OAuth Apps) :
-   - URL de rappel : `https://<worker>.workers.dev/callback`
+   - URL de rappel : `https://mangosunday.arnaud-caillol.workers.dev/callback`
 5. **Déployer le Worker** : coller `workers/oauth/index.js` dans un nouveau Worker via
    le tableau de bord, puis définir en **Secret** `GITHUB_CLIENT_ID`,
-   `GITHUB_CLIENT_SECRET` et `ORIGINE_ADMIN` (`https://mangosunday.com`).
-   *wrangler n'est pas utilisable ici, Node n'étant pas installé sur le poste.*
-6. **Renseigner `base_url`** dans `public/admin/config.yml` avec l’URL du Worker.
-   `repo` est déjà renseigné. C’est la **dernière valeur `REMPLACER`** du projet, et
-   le seul verrou restant avant que `/admin/` puisse s’authentifier.
+   `GITHUB_CLIENT_SECRET` et `ORIGINE_ADMIN`.
+   *wrangler n’est pas utilisable ici, Node n’étant pas installé sur le poste.*
+
+   **`ORIGINE_ADMIN` doit être exactement l’origine qui sert `/admin/`.** C’est la
+   cible du `postMessage` qui rapporte le jeton au CMS. Si elle ne correspond pas au
+   caractère près, le navigateur jette le message **sans aucun message d’erreur** :
+   la fenêtre de connexion tourne indéfiniment et rien n’apparaît dans la console.
+
+   - Tant que le site vit sur Pages : `https://<projet>.pages.dev`
+   - Après branchement du domaine : `https://mangosunday.com`
+
+   Les deux valeurs sont à mettre à jour **ensemble** le jour du branchement :
+   `ORIGINE_ADMIN` dans le Worker, et l’URL de rappel de l’application OAuth.
+6. ~~**Renseigner `config.yml`**~~ — fait : `repo` et `base_url` sont renseignés,
+   le relais est `https://mangosunday.arnaud-caillol.workers.dev`.
 7. **Cloudflare Email Routing** : `contact@mangosunday.com` vers une boîte existante.
    Gratuit. Attention : cela **reçoit** mais n'envoie pas — répondre depuis l'adresse
    du domaine demande une configuration séparée.

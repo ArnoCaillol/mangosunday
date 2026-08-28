@@ -11,7 +11,12 @@
    en « Secret » et non en texte clair :
      GITHUB_CLIENT_ID
      GITHUB_CLIENT_SECRET
-     ORIGINE_ADMIN    ex. https://mangosunday.com
+     ORIGINE_ADMIN    origine EXACTE qui sert /admin/ — cible du postMessage.
+                      Tant que le site vit sur Pages : https://<projet>.pages.dev
+                      Apres branchement du domaine   : https://mangosunday.com
+                      Une origine qui ne correspond pas au caractere pres fait
+                      jeter le message par le navigateur, SANS erreur : la
+                      fenetre de connexion tourne indefiniment.
    ═══════════════════════════════════════════════════════════════ */
 
 export default {

@@ -12,7 +12,7 @@ backend:
   name: github
   repo: ArnoCaillol/mangosunday        # ← compte-github/depot
   branch: main
-  base_url: https://REMPLACER.workers.dev   # ← Worker de relais OAuth
+  base_url: https://mangosunday.arnaud-caillol.workers.dev
 
 # La racine publiee est public/ : media_folder pointe dans le depot,
 # public_folder est le chemin vu par le navigateur.
