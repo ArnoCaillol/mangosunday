@@ -238,7 +238,7 @@ strong{font-weight:700}
 .lecteur-phare > .btn{ width:100%; max-width:100% }
 .lecteur-phare > .btn > span{ min-width:0 }
 .lecteur-phare iframe{
-  width:100%; height:152px; border:none; display:block;
+  width:100%; height:152px; border:none; display:block; background:var(--sable);
 }
 
 /* ═══ MOTIF DE BANDES ═══════════════════════════════════════
