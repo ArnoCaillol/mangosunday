@@ -335,7 +335,7 @@ async function demarrer(){
   try{
     [site, dates, galerie] = await Promise.all([
       lireJSON("/content/site.json"),
-      lireJSON("/content/dates.json").catch(() => []),
+      lireJSON("/content/dates.json").then(data => data.dates || []).catch(() => []),
       lireJSON("/content/galerie.json").catch(() => [])
     ]);
   }catch(err){
