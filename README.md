@@ -185,3 +185,16 @@ et sur fond tireté.
   Chrome headless n'exporte qu'en PNG et aucun convertisseur n'est disponible ici.
 - Le logo est à fond beige opaque, posé en tuile arrondie sur le crème. Une version
   détourée à fond transparent donnerait un rendu plus net.
+
+## Deux pièges du tableau de bord Cloudflare
+
+**Il y a deux sections « Variables and secrets »** sur la page *Settings* du Worker.
+Celle qui se trouve dans la section **Builds**, entre *API token* et *Deploy Hooks*,
+alimente le processus de construction — le Worker ne la voit **jamais** à l'exécution.
+Les secrets du relais OAuth vont dans la **première** section de la page, celle du
+Worker lui-même. Symptôme d'une erreur ici : `/auth` redirige vers GitHub avec
+`client_id=undefined`.
+
+**Un secret ajouté ne s'applique qu'à la version suivante.** La version en cours
+continue de tourner sans lui. Après avoir ajouté ou déplacé un secret, déclencher un
+redéploiement — un push, ou *Deployments* → *Deploy*.
