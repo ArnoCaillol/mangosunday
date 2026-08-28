@@ -7,9 +7,19 @@
 <title>Administration — Mango Sunday</title>
 </head>
 <body>
-<!-- Sveltia CMS. Configuration compatible Decap : pour basculer, il
+<!-- Sveltia CMS, configuration compatible Decap : pour basculer, il
      suffit de remplacer cette balise script par le chargeur Decap.
-     C'est ce qui plafonne le risque d'un projet avant sa 1.0. -->
-<script type="module" src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
+     C'est ce qui plafonne le risque d'un projet avant sa 1.0.
+
+     PAS de type="module" : le bundle distribue est un script
+     classique, pas un module ES. L'ajouter provoque un avertissement
+     et un comportement imprevisible.
+
+     Version EPINGLEE volontairement. Sans numero, unpkg sert la
+     derniere version publiee : l'administration pourrait cesser de
+     fonctionner du jour au lendemain sans aucune modification de
+     notre part. A relever de temps en temps, en verifiant que la
+     connexion fonctionne toujours apres. -->
+<script src="https://unpkg.com/@sveltia/cms@0.201.1/dist/sveltia-cms.js"></script>
 </body>
 </html>

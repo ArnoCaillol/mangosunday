@@ -19,8 +19,6 @@ backend:
 media_folder: "public/assets/img/galerie"
 public_folder: "/assets/img/galerie"
 
-locale: "fr"
-
 # Pas de brouillons : deux a quatre editions par mois, un flux de
 # validation serait une lourdeur sans contrepartie.
 publish_mode: simple

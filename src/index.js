@@ -13,11 +13,11 @@
    Variables a definir en « Secret » dans le tableau de bord :
      GITHUB_CLIENT_ID
      GITHUB_CLIENT_SECRET
-     ORIGINE_ADMIN    origine EXACTE qui sert /admin/ — cible du
-                      postMessage. Le relais partageant desormais
-                      l'origine du site, c'est simplement l'URL du
-                      site : https://mangosunday.arnaud-caillol.workers.dev
-                      puis https://mangosunday.com apres branchement.
+
+   Deux secrets, et c'est tout. ORIGINE_ADMIN n'est plus necessaire :
+   le relais partageant l'origine de l'administration, la cible du
+   postMessage est location.origin, connue du navigateur lui-meme.
+   La variable peut etre supprimee du tableau de bord.
    ═══════════════════════════════════════════════════════════════ */
 
 export default {
@@ -94,7 +94,7 @@ async function terminer(request, url, env) {
     ? { token: data.access_token, provider: "github" }
     : { error: data.error_description || "Échec de l'authentification" };
 
-  return pageRetour(resultat, env.ORIGINE_ADMIN);
+  return pageRetour(resultat);
 }
 
 /* ── 3. Page de retour ─────────────────────────────────────────
@@ -106,27 +106,49 @@ async function terminer(request, url, env) {
 
    D'ou la CSP portee par la reponse elle-meme, avec un nonce genere
    par requete. Le relais ne depend ainsi d'aucune hypothese sur ce
-   que _headers applique ou non aux reponses dynamiques. */
-function pageRetour(resultat, origineAdmin) {
+   que _headers applique ou non aux reponses dynamiques.
+
+   Cible du postMessage : location.origin, et NON une variable de
+   configuration. Le relais partageant desormais l'origine de
+   l'administration, la bonne valeur est connue du navigateur lui-meme.
+   C'est ce qui supprime definitivement la classe de panne la plus
+   penible du montage : une origine mal saisie faisait jeter le message
+   par le navigateur, sans erreur, et la fenetre tournait sans fin.
+   ORIGINE_ADMIN n'est donc plus utilisee.
+
+   En cas d'echec, la fenetre ne se ferme PAS : elle affiche la raison.
+   Se fermer en silence laissait le CMS conclure a une interruption
+   ("Authentication aborted") sans jamais dire pourquoi. */
+function pageRetour(resultat) {
   const nonce = crypto.randomUUID().replace(/-/g, "");
   const etat = resultat.token ? "success" : "error";
+  const echec = resultat.error
+    ? String(resultat.error).replace(/[<>&]/g, "")
+    : "";
 
   const page = `<!DOCTYPE html>
 <html lang="fr"><head><meta charset="utf-8"><title>Connexion</title></head>
-<body style="font:16px system-ui;padding:2rem">
-<p>Connexion en cours, cette fenêtre va se fermer.</p>
+<body style="font:16px/1.5 system-ui,sans-serif;padding:2rem;max-width:34rem">
+<p id="m">Connexion en cours, cette fenêtre va se fermer.</p>
 <script nonce="${nonce}">
 (function () {
   var msg = ${JSON.stringify(JSON.stringify(resultat))};
-  var cible = ${JSON.stringify(origineAdmin)};
+  var ok = ${etat === "success"};
   function envoyer() {
     if (window.opener) {
-      window.opener.postMessage('authorization:github:${etat}:' + msg, cible);
+      window.opener.postMessage(
+        'authorization:github:${etat}:' + msg, window.location.origin);
     }
   }
   window.addEventListener('message', envoyer, false);
   envoyer();
-  setTimeout(function () { window.close(); }, 1500);
+  if (ok) {
+    setTimeout(function () { window.close(); }, 3000);
+  } else {
+    document.getElementById('m').textContent =
+      "Échec de l'authentification : " + ${JSON.stringify(echec)} +
+      " — vous pouvez fermer cette fenêtre.";
+  }
 })();
 <\/script>
 </body></html>`;

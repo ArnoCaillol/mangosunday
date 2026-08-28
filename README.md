@@ -126,22 +126,22 @@ Dans cet ordre.
 4. **Application OAuth GitHub** (Settings → Developer settings → OAuth Apps) :
    - URL de rappel : `https://mangosunday.arnaud-caillol.workers.dev/callback`
 5. **Secrets du Worker** : dans le tableau de bord, sur le Worker `mangosunday`,
-   définir en **Secret** `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` et
-   `ORIGINE_ADMIN`.
+   définir en **Secret** `GITHUB_CLIENT_ID` et `GITHUB_CLIENT_SECRET`. Deux
+   secrets, et c’est tout.
 
    **Le relais est déployé avec le site.** `src/index.js` part à chaque push sur
    `main`, comme le reste : rien à recoller dans le tableau de bord. Seuls les
    secrets s’y définissent, une fois pour toutes.
 
-   **`ORIGINE_ADMIN` doit être exactement l’origine qui sert `/admin/`.** C’est la
-   cible du `postMessage` qui rapporte le jeton au CMS. Si elle ne correspond pas au
-   caractère près, le navigateur jette le message **sans aucun message d’erreur** :
-   la fenêtre de connexion tourne indéfiniment et rien n’apparaît dans la console.
+   **`ORIGINE_ADMIN` n’existe plus** et peut être supprimée du tableau de bord si
+   elle y traîne. Le relais partageant l’origine de l’administration, la cible du
+   `postMessage` est `location.origin`, connue du navigateur. C’était la classe de
+   panne la plus pénible du montage — une origine mal saisie faisait jeter le
+   message sans erreur, et la fenêtre tournait sans fin. Elle a disparu.
 
-   Le relais partageant désormais l’origine du site, c’est simplement l’URL du
-   site — `https://mangosunday.arnaud-caillol.workers.dev`, puis
-   `https://mangosunday.com` après branchement du domaine. À mettre à jour ce
-   jour-là, en même temps que l’URL de rappel de l’application OAuth.
+   Le jour du branchement du domaine, une seule chose à changer côté
+   authentification : l’**URL de rappel** de l’application OAuth GitHub, qui devient
+   `https://mangosunday.com/callback`.
 6. ~~**Renseigner `config.yml`**~~ — fait : `repo` et `base_url` sont renseignés,
    le relais est `https://mangosunday.arnaud-caillol.workers.dev`.
 7. **Cloudflare Email Routing** : `contact@mangosunday.com` vers une boîte existante.
