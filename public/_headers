@@ -5,6 +5,9 @@
 # et ils ne sont injectes qu'au clic de l'utilisateur.
 # ─────────────────────────────────────────────────────────────
 
+# TEMPORAIRE — recette sur *.pages.dev, avant le branchement du domaine.
+# Retirer la ligne X-Robots-Tag ci-dessous le jour ou mangosunday.com est
+# branche, sinon le site reste invisible des moteurs de recherche.
 /*
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; frame-src https://open.spotify.com https://www.youtube-nocookie.com https://bandcamp.com
   Strict-Transport-Security: max-age=31536000; includeSubDomains
@@ -12,6 +15,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
   Cross-Origin-Opener-Policy: same-origin
+  X-Robots-Tag: noindex
 
 # L'administration doit dialoguer avec l'API GitHub et charger Sveltia
 # depuis un CDN : CSP volontairement plus souple, et hors index.

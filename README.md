@@ -114,8 +114,14 @@ Dans cet ordre.
 2. ~~**Créer le dépôt GitHub**~~ — fait : <https://github.com/ArnoCaillol/mangosunday>
 3. **Cloudflare Pages** : connecter le dépôt.
    - Commande de build : **laisser vide**
-   - Répertoire de sortie : **`public`**
+   - Répertoire de sortie : **`public`** — si ce réglage reste à la racine,
+     `_headers` et `_redirects` sont ignorés sans le moindre message d’erreur,
+     et vous perdez la CSP, le HSTS et le `noindex` de `/admin/`.
    - Brancher le domaine, HTTPS automatique.
+   - **En attendant le domaine**, le site tourne sur `*.pages.dev` et
+     `_headers` porte un `X-Robots-Tag: noindex` global. **Retirer cette ligne**
+     du bloc `/*` le jour du branchement, sinon le site reste invisible des
+     moteurs de recherche.
 4. **Application OAuth GitHub** (Settings → Developer settings → OAuth Apps) :
    - URL de rappel : `https://<worker>.workers.dev/callback`
 5. **Déployer le Worker** : coller `workers/oauth/index.js` dans un nouveau Worker via
