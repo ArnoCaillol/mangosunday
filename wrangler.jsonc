@@ -1,0 +1,27 @@
+{
+  // ═══════════════════════════════════════════════════════════════
+  // Cloudflare Workers + Static Assets
+  //
+  // Ce fichier prend le pas sur les reglages du tableau de bord.
+  // « name » DOIT correspondre au Worker deja en service, sinon un
+  // second Worker serait cree au lieu de mettre a jour celui-ci.
+  // Il se lit dans l'URL : mangosunday.arnaud-caillol.workers.dev
+  //
+  // Les fichiers de public/ sont servis directement, avec _headers
+  // et _redirects. Le script ne recoit que ce qui ne correspond a
+  // aucun fichier : /auth et /callback, le relais OAuth.
+  // ═══════════════════════════════════════════════════════════════
+
+  "name": "mangosunday",
+  "main": "src/index.js",
+  "compatibility_date": "2025-03-01",
+
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

@@ -89,7 +89,8 @@ public/          racine publiée par Cloudflare Pages
   admin/         Sveltia CMS — config.yml EST le périmètre d'édition
   assets/fonts/  4 fontes woff2, sous-ensemble latin
   _headers       CSP, HSTS, cache, noindex de /admin
-workers/oauth/   relais OAuth, à coller dans le tableau de bord Cloudflare
+src/index.js     relais OAuth /auth et /callback — déployé AVEC le site
+wrangler.jsonc   configuration du déploiement Cloudflare
 .github/         compression des images de galerie
 tools/serve.ps1  serveur local, non publié
 ```
@@ -112,38 +113,35 @@ Dans cet ordre.
 1. **Acheter `mangosunday.com`** après avoir vérifié sa disponibilité, ainsi que celle
    du nom sur Spotify, Bandcamp et Instagram.
 2. ~~**Créer le dépôt GitHub**~~ — fait : <https://github.com/ArnoCaillol/mangosunday>
-3. **Cloudflare Pages** : connecter le dépôt.
-   - Commande de build : **laisser vide**
-   - Répertoire de sortie : **`public`** — si ce réglage reste à la racine,
-     `_headers` et `_redirects` sont ignorés sans le moindre message d’erreur,
-     et vous perdez la CSP, le HSTS et le `noindex` de `/admin/`.
-   - Brancher le domaine, HTTPS automatique.
-   - **En attendant le domaine**, le site tourne sur `*.pages.dev` et
-     `_headers` porte un `X-Robots-Tag: noindex` global. **Retirer cette ligne**
-     du bloc `/*` le jour du branchement, sinon le site reste invisible des
-     moteurs de recherche.
+3. ~~**Cloudflare : connecter le dépôt**~~ — fait. Le site est déployé sur
+   `https://mangosunday.arnaud-caillol.workers.dev` (modèle Workers + Static
+   Assets, pas Pages — d’où l’URL en `workers.dev`).
+   - La configuration vit désormais dans `wrangler.jsonc`, qui prend le pas sur
+     les réglages du tableau de bord : répertoire d’assets `./public`, et
+     `src/index.js` comme script.
+   - **En attendant le domaine**, `_headers` porte un `X-Robots-Tag: noindex`
+     global. **Retirer cette ligne** du bloc `/*` le jour du branchement, sinon
+     le site reste invisible des moteurs de recherche.
+   - Reste à faire : brancher `mangosunday.com`, HTTPS automatique.
 4. **Application OAuth GitHub** (Settings → Developer settings → OAuth Apps) :
    - URL de rappel : `https://mangosunday.arnaud-caillol.workers.dev/callback`
-5. **Déployer le Worker** : coller `workers/oauth/index.js` dans un nouveau Worker via
-   le tableau de bord, puis définir en **Secret** `GITHUB_CLIENT_ID`,
-   `GITHUB_CLIENT_SECRET` et `ORIGINE_ADMIN`.
+5. **Secrets du Worker** : dans le tableau de bord, sur le Worker `mangosunday`,
+   définir en **Secret** `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` et
+   `ORIGINE_ADMIN`.
 
-   **Le Worker n’est PAS déployé depuis ce dépôt.** Modifier
-   `workers/oauth/index.js` ici ne change rien au Worker en service : il faut
-   recoller le fichier dans le tableau de bord et redéployer. Le fichier du dépôt
-   est la source de référence, pas la source de déploiement.
-   *wrangler n’est pas utilisable ici, Node n’étant pas installé sur le poste.*
+   **Le relais est déployé avec le site.** `src/index.js` part à chaque push sur
+   `main`, comme le reste : rien à recoller dans le tableau de bord. Seuls les
+   secrets s’y définissent, une fois pour toutes.
 
    **`ORIGINE_ADMIN` doit être exactement l’origine qui sert `/admin/`.** C’est la
    cible du `postMessage` qui rapporte le jeton au CMS. Si elle ne correspond pas au
    caractère près, le navigateur jette le message **sans aucun message d’erreur** :
    la fenêtre de connexion tourne indéfiniment et rien n’apparaît dans la console.
 
-   - Tant que le site vit sur Pages : `https://<projet>.pages.dev`
-   - Après branchement du domaine : `https://mangosunday.com`
-
-   Les deux valeurs sont à mettre à jour **ensemble** le jour du branchement :
-   `ORIGINE_ADMIN` dans le Worker, et l’URL de rappel de l’application OAuth.
+   Le relais partageant désormais l’origine du site, c’est simplement l’URL du
+   site — `https://mangosunday.arnaud-caillol.workers.dev`, puis
+   `https://mangosunday.com` après branchement du domaine. À mettre à jour ce
+   jour-là, en même temps que l’URL de rappel de l’application OAuth.
 6. ~~**Renseigner `config.yml`**~~ — fait : `repo` et `base_url` sont renseignés,
    le relais est `https://mangosunday.arnaud-caillol.workers.dev`.
 7. **Cloudflare Email Routing** : `contact@mangosunday.com` vers une boîte existante.
