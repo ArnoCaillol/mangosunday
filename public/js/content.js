@@ -333,10 +333,14 @@ async function demarrer(){
 
   let site = {}, dates = [], galerie = [];
   try{
+    // Le CMS serialise une liste de premier niveau en objet clave par le
+    // nom du champ : {"dates":[...]} et {"photos":[...]}. Les deux sont
+    // donc deballes ici. Pour la galerie, « || data » tolere en plus la
+    // forme tableau nu, encore en place tant que rien n'a ete publie.
     [site, dates, galerie] = await Promise.all([
       lireJSON("/content/site.json"),
       lireJSON("/content/dates.json").then(data => data.dates || []).catch(() => []),
-      lireJSON("/content/galerie.json").catch(() => [])
+      lireJSON("/content/galerie.json").then(data => data.photos || data).catch(() => [])
     ]);
   }catch(err){
     console.warn("Contenu indisponible, la page reste en état statique.", err);
