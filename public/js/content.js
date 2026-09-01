@@ -325,54 +325,68 @@ function animerBandes(){
   bandes.forEach(b => obs.observe(b));
 }
 
+/** Leve le voile d'attente pose par le CSS sur les blocs volatils.
+ *  Appele dans un finally : meme une exception en pleine hydratation
+ *  doit devoiler la page plutot que de la laisser sous le miroitement. */
+function revelerBlocs(){
+  $$("[data-attente]").forEach(el => el.removeAttribute("data-attente"));
+}
+
 /* ── Amorçage ─────────────────────────────────────────────────
-   Toute erreur laisse la page dans son etat statique : placeholders
-   visibles et etats vides. Rien ne casse, rien ne disparait. */
+   Toute erreur laisse la page dans son etat statique : textes de
+   repli, placeholders visibles et etats vides. Rien ne casse, rien
+   ne disparait, et le voile d'attente est toujours leve.
+
+   Les trois lectures ont chacune leur .catch : le Promise.all ne peut
+   donc plus etre rejete, et le montage a toujours lieu. Auparavant un
+   simple echec de site.json faisait sortir la fonction AVANT tout
+   montage, ce qui vidait aussi les dates et la galerie. */
 async function demarrer(){
   animerBandes();
 
-  let site = {}, dates = [], galerie = [];
   try{
     // Le CMS serialise une liste de premier niveau en objet clave par le
     // nom du champ : {"dates":[...]} et {"photos":[...]}. Les deux sont
     // donc deballes ici. Pour la galerie, « || data » tolere en plus la
     // forme tableau nu, encore en place tant que rien n'a ete publie.
-    [site, dates, galerie] = await Promise.all([
-      lireJSON("/content/site.json"),
+    const [site, dates, galerie] = await Promise.all([
+      lireJSON("/content/site.json").catch(err => {
+        console.warn("site.json indisponible, blocs laissés en état statique.", err);
+        return {};
+      }),
       lireJSON("/content/dates.json").then(data => data.dates || []).catch(() => []),
       lireJSON("/content/galerie.json").then(data => data.photos || data).catch(() => [])
     ]);
-  }catch(err){
-    console.warn("Contenu indisponible, la page reste en état statique.", err);
-    return;
+
+    const ecoute = site.ecoute || {};
+    const liens  = ecoute.liens || {};
+
+    monterBandeau(site.bandeau);
+    poserTexte($("[data-bio-courte] .ph") || $("[data-bio-courte]"), site.bio_courte);
+    monterPlateformes(liens);
+    monterReseaux(liens);
+    monterGalerie(galerie);
+    const aVenir = monterDates(dates);
+    enrichirJSONLD(liens, aVenir);
+
+    monterFacadeAudio({
+      conteneur:  $("[data-lecteur-audio]"),
+      bouton:     $("[data-facade-audio]"),
+      url:        ecoute.url_phare,
+      titre:      ecoute.titre_phare,
+      plateforme: ecoute.plateforme || "spotify"
+    });
+
+    monterFacadeVideo({
+      conteneur: $("[data-lecteur-video]"),
+      bouton:    $("[data-facade-video]"),
+      id:        idYoutube(site.video?.id_youtube),
+      titre:     site.video?.titre,
+      vide:      $("[data-video-vide]")
+    });
+  }finally{
+    revelerBlocs();
   }
-
-  const ecoute = site.ecoute || {};
-  const liens  = ecoute.liens || {};
-
-  monterBandeau(site.bandeau);
-  poserTexte($("[data-bio-courte] .ph") || $("[data-bio-courte]"), site.bio_courte);
-  monterPlateformes(liens);
-  monterReseaux(liens);
-  monterGalerie(galerie);
-  const aVenir = monterDates(dates);
-  enrichirJSONLD(liens, aVenir);
-
-  monterFacadeAudio({
-    conteneur:  $("[data-lecteur-audio]"),
-    bouton:     $("[data-facade-audio]"),
-    url:        ecoute.url_phare,
-    titre:      ecoute.titre_phare,
-    plateforme: ecoute.plateforme || "spotify"
-  });
-
-  monterFacadeVideo({
-    conteneur: $("[data-lecteur-video]"),
-    bouton:    $("[data-facade-video]"),
-    id:        idYoutube(site.video?.id_youtube),
-    titre:     site.video?.titre,
-    vide:      $("[data-video-vide]")
-  });
 }
 
 demarrer();

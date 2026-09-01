@@ -29,6 +29,11 @@
 <link rel="preload" href="/assets/fonts/libre-franklin-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/css/site.css">
 
+<!-- facades.js est un import statique de content.js : sans cette ligne le
+     navigateur ne le decouvre qu'apres avoir parse content.js, ce qui met
+     un aller-retour complet de plus entre l'affichage et l'hydratation. -->
+<link rel="modulepreload" href="/js/facades.js">
+
 <script type="application/ld+json" id="ld-groupe">
 {
   "@context": "https://schema.org",
@@ -70,7 +75,10 @@
         <div class="lecteur-phare" data-lecteur-audio>
           <button class="btn btn-primaire" type="button" data-facade-audio disabled>
             <span class="tri" aria-hidden="true"></span>
-            <span>Écouter <span class="ph" data-titre-phare>[TITRE DU MORCEAU]</span></span>
+            <!-- Repli neutre, pas un placeholder : c'est exactement la valeur
+                 de secours de facades.js. Il s'affiche tel quel si le script
+                 n'arrive jamais, et le voile d'attente le couvre entre-temps. -->
+            <span>Écouter <span data-titre-phare data-attente>le morceau</span></span>
           </button>
         </div>
         <a class="btn btn-fantome" href="#booking">Booking &amp; contact</a>
@@ -102,7 +110,9 @@
           <button class="lecture" type="button" data-facade-video disabled>
             <span class="tri tri-lecture" aria-hidden="true"></span>
           </button>
-          <p class="facade-vide" data-video-vide><span class="ph">[VIDÉO LIVE À VENIR]</span></p>
+          <!-- Pas de voile ici : .facade-vide est deja position:absolute et
+               le voile la deplacerait. Le texte neutre suffit. -->
+          <p class="facade-vide" data-video-vide>Vidéo live à venir</p>
         </div>
       </div>
       <div class="bandes bandes-nuit" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
@@ -114,7 +124,7 @@
     <div class="bloc-in">
       <h2>Le groupe</h2>
 
-      <p class="chapo" data-bio-courte><span class="ph">[BIO COURTE — 50 mots]</span></p>
+      <p class="chapo" data-bio-courte data-attente><span class="ph">[BIO COURTE — 50 mots]</span></p>
 
       <!-- Bio longue : STATIQUE et non editable. C'est elle qui porte le
            texte indexable de la page. Ne pas la deplacer dans le CMS. -->

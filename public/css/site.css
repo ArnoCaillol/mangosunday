@@ -110,6 +110,55 @@ img{max-width:100%; height:auto; display:block}
 }
 .nuit .ph{ color:var(--mangue); border-color:var(--mangue); background:rgba(226,154,38,.1) }
 
+/* ── Voile d'attente : couvre un bloc volatil tant que l'hydratation
+      n'a pas eu lieu, pour qu'une connexion lente ne montre jamais un
+      libelle de repli en train d'etre remplace.
+
+      L'etat ne peut PAS se figer, par construction, et il faut les
+      trois garde-fous ensemble :
+        1. content.js retire data-attente dans un finally, donc meme
+           une exception en pleine hydratation devoile les blocs ;
+        2. si le script n'arrive jamais (reseau coupe, JS desactive),
+           l'animation « abandon » escamote le voile toute seule au
+           bout de 6 s et decouvre le texte ecrit en dur dans la page ;
+        3. sous prefers-reduced-motion la regle globale de la fin du
+           fichier ramene les deux animations a .01ms : le voile est
+           donc escamote d'emblee, et ces visiteurs voient simplement
+           le texte de repli puis le vrai contenu.
+
+      Le voile est OPAQUE : c'est ce qui permet de laisser une chip
+      [ENTRE CROCHETS] dessous sans que le visiteur la voie passer.
+
+      Ne PAS poser data-attente sur un element deja positionne
+      (.facade-vide) : la regle position:relative ci-dessous a la meme
+      specificite et gagnerait, ce qui deplacerait l'element. ── */
+[data-attente]{ position:relative }
+[data-attente]::after{
+  content:""; position:absolute; inset:0;
+  z-index:2; pointer-events:none; border-radius:5px;
+  /* Aplats OPAQUES, et c'est le point : une teinte translucide laisserait
+     lire la chip [ENTRE CROCHETS] de la bio par transparence. Filet et
+     sable plutot que blanc-casse, dont le contraste sur le bouton mangue
+     lisait comme un element casse plutot que comme un chargement. */
+  background:linear-gradient(90deg,
+    var(--filet) 30%, var(--sable) 50%, var(--filet) 70%);
+  background-size:200% 100%;
+  animation:miroitement 1.5s linear infinite, abandon 6s ease forwards;
+}
+.nuit [data-attente]::after{
+  background:linear-gradient(90deg,
+    rgba(214,202,180,.20) 30%, rgba(214,202,180,.44) 50%, rgba(214,202,180,.20) 70%);
+  background-size:200% 100%;
+}
+@keyframes miroitement{
+  from{ background-position:100% 0 }
+  to  { background-position:-100% 0 }
+}
+@keyframes abandon{
+  0%,88%{ opacity:1 }
+  100%  { opacity:0; visibility:hidden }
+}
+
 /* ═══ TYPOGRAPHIE ═══ */
 h1,h2,h3{ margin:0; text-wrap:balance }
 h2{

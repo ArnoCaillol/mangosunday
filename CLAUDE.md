@@ -58,7 +58,7 @@ Field-level contracts between `config.yml` and the JS, none of them validated:
 - **Hard-coded in `index.html`**: `<title>`, meta description, Open Graph, `h1`, baseline, the **long** bio, and the **band roster** (`<h3>Qui joue</h3>` + `ul.membres`, four `li` each holding `.prenom` and `.instrument`). All SEO-bearing text is served on the first request and is intentionally unreachable from the CMS. The roster shares its `repeat(auto-fit, minmax(190px,1fr))` grid with `.galerie`, so adding or removing a member needs no CSS change.
 - **Hard-coded in `mentions-legales.html`**: all four legal placeholders. Layout, art direction, legal notices and SEO are excluded from the CMS by design.
 
-Bracketed placeholders still in the HTML. Only `[VILLE]`, `[BIO COURTE — 50 mots]`, `[BIO LONGUE — 200 mots]` and the four legal ones render as visible dashed `.ph` chips today:
+Every bracketed token left in the source renders as a visible dashed `.ph` chip:
 
 | Token | Where | Layer |
 |---|---|---|
@@ -66,7 +66,8 @@ Bracketed placeholders still in the HTML. Only `[VILLE]`, `[BIO COURTE — 50 mo
 | `[BIO LONGUE — 200 mots]` | index.html, section « Le groupe » | HTML edit only |
 | `[NOM DE L'ÉDITEUR]`, `[STATUT JURIDIQUE …]`, `[ADRESSE POSTALE]`, `[NOM]` | mentions-legales.html | HTML edit only |
 | `[BIO COURTE — 50 mots]` | index.html *and* site.json | CMS `bio_courte` — the one CMS field still holding a literal placeholder |
-| `[TITRE DU MORCEAU]`, `[VIDÉO LIVE À VENIR]` | index.html | **Already resolved** — `site.json` carries real values, so these survive only as the fallback shown if hydration fails |
+
+The hero's `[TITRE DU MORCEAU]` and the video façade's `[VIDÉO LIVE À VENIR]` are **gone on purpose**: their `site.json` values have been filled, so the static HTML now carries neutral fallback copy (`le morceau`, `Vidéo live à venir`) instead of a chip. `le morceau` is *exactly* facades.js's own fallback string — keep the two in sync, or a slow connection shows one wording and the hydrated page another. **Do not reintroduce bracket chips on a block that has real content**; a visitor on a slow link would see them.
 
 The README checklist claims `[VILLE]` also appears in `<title>` and the meta description. **It does not** — those read finished copy. Do not inject a city into them.
 
@@ -81,6 +82,22 @@ The README checklist claims `[VILLE]` also appears in `<title>` and the meta des
 - `ecoute.liens` is one object driving three renderings — the "Écouter ailleurs" list, the footer socials, and the JSON-LD `sameAs`. They cannot diverge.
 - JSON-LD is built two ways: `sameAs` is mutated in place inside the existing `#ld-groupe` script; MusicEvents are appended as a **separate** script holding a bare array that references the group by the hard-coded `{"@id":"https://mangosunday.com/#groupe"}` — keep it in sync with the seed in `index.html`.
 - `animerBandes()` runs *before* any fetch, so stripe animation survives total content failure.
+
+### The loading veil (`data-attente`)
+
+Hydration cannot start before `content.js` has been fetched and parsed, so there is always a window where the static fallback copy is on screen. `[data-attente]` covers a volatile block with an opaque shimmering `::after` for that window. It is on the hero's track label and the short bio; **not** on `.facade-vide`, which is already `position:absolute` — `[data-attente]{position:relative}` has the same specificity and would win, displacing the element.
+
+The veil cannot get stuck, and it takes all three guardrails together:
+
+1. `revelerBlocs()` strips every `data-attente` in a **`finally`**, so even an exception mid-hydration reveals the page.
+2. If the script never arrives at all (network cut, JS disabled), the CSS `abandon` animation retires the veil by itself at 6 s via `fill: forwards`, uncovering the hard-coded fallback text.
+3. Under `prefers-reduced-motion`, the global `animation-duration:.01ms !important` rule at the end of `site.css` collapses both animations, so those visitors get no shimmer and an immediate reveal.
+
+Guardrail 3 is why the veil must never be built from `transition`s or from JS-driven timing — it relies on that global rule catching it.
+
+The veil is **opaque on purpose**: a translucent tint lets the `[BIO COURTE]` chip underneath show through, which defeats the point.
+
+**`<link rel="modulepreload" href="/js/facades.js">` in the `<head>` is load-bearing.** `facades.js` is a static `import` of `content.js`, so without the hint the browser cannot discover it until `content.js` is parsed — measured as a full extra round trip before hydration (facades.js started at 373 ms instead of 13 ms). Deleting the line silently lengthens the veil window on exactly the slow connections it exists for.
 
 ### Privacy posture
 
@@ -136,7 +153,7 @@ Removing either unwrap reintroduces a failure with no console error: the block s
 
 ### Other failure modes
 
-- **`site.json` has no per-promise `.catch()`** while the other two do. Any failure on it rejects the whole `Promise.all`, hits the outer catch, and `return`s **before any mounting runs** — blanking dates, gallery, platform links, footer socials, and leaving both play buttons permanently `disabled`, with only a `console.warn`. The page still looks intact because placeholders are the designed fallback.
+- **All three reads now carry their own `.catch()`**, so the `Promise.all` cannot reject and mounting always runs. This is load-bearing, not tidiness: `site.json` used to have none, and a single failure on it returned from `demarrer()` *before any mounting*, blanking dates, gallery, platform links and footer socials at once. Removing any of the three catches brings that back — and now also strands the loading veil.
 - **Unguarded `querySelector` derefs**: `[data-bandeau-texte]`, `[data-bloc-plateformes]`, `[data-bloc-galerie]`, and `bouton.disabled` in both facade mounts. Renaming an inner hook throws mid-hydration; because the facade mounts run last and there is no try/catch, both play buttons stay dead.
 - **Booleans are compared with `=== true`.** A string `"true"` in `bandeau.actif` or `complet` makes the banner never show, and a sold-out concert render its ticket link.
 - **`plateforme` offers spotify/bandcamp/youtube but only Spotify can embed**, and only when `url_phare` is an `open.spotify.com` URL matching `/track|album|playlist|artist|episode/ID`. Anything else replaces the `<button>` with an `<a target="_blank">` — a working but different UI. Note `bouton.replaceWith(a)` discards the whole button, **including the `[data-titre-phare]` span and its dashed chip**: with an unfilled `titre_phare` the link just reads "Écouter le morceau". That is the one place where a missing chip is not evidence of filled content. The chip persists only in the other branch — an invalid `url_phare`, which just leaves the button `disabled`.
