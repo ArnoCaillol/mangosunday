@@ -11,7 +11,8 @@
    noeuds construits, et toute URL passe par urlSure().
    ═══════════════════════════════════════════════════════════════ */
 
-import { monterFacadeAudio, monterFacadeVideo, urlSure, idYoutube, etiquette } from "./facades.js";
+import { monterFacadeAudio, monterFacadeVideo, urlSure, idYoutube, etiquette,
+         pictureAvecDerives } from "./facades.js";
 
 const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -204,28 +205,21 @@ function monterGalerie(items){
     if(typeof it?.fichier !== "string" || it.fichier.trim() === "") return null;
     const chemin = it.fichier.trim();
     if(!chemin.startsWith("/assets/img/") && !chemin.startsWith("assets/img/")) return null;
-    const abs  = chemin.startsWith("/") ? chemin : "/" + chemin;
-    const base = abs.replace(/\.[a-zA-Z0-9]+$/, "");
+    const abs = chemin.startsWith("/") ? chemin : "/" + chemin;
 
     const li  = document.createElement("li");
     const fig = document.createElement("figure");
     fig.style.margin = "0";
-    const pic = document.createElement("picture");
 
-    for(const [type, ext] of [["image/avif",".avif"], ["image/webp",".webp"]]){
-      const s = document.createElement("source");
-      s.type = type;
-      s.srcset = base + ext;
-      pic.append(s);
-    }
-    const img = document.createElement("img");
-    img.src = abs;
+    // Les derives .avif/.webp n'existent qu'apres le passage de la CI :
+    // entre le commit de l'editeur et celui du robot, ils repondent 404.
+    // pictureAvecDerives gere ce repli, qui n'est PAS automatique.
+    const {img, pic} = pictureAvecDerives(abs);
     img.alt = estPlaceholder(it.alt) ? `Mango Sunday en concert, photo ${i + 1}` : it.alt.trim();
     img.loading = "lazy";
     img.decoding = "async";
     img.width = 600;
     img.height = 400;
-    pic.append(img);
     fig.append(pic);
 
     if(!estPlaceholder(it.credit)){

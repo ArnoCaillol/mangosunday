@@ -103,6 +103,88 @@ export function monterFacadeAudio({conteneur, bouton, url, titre, plateforme}){
   }, {once:true});
 }
 
+/** <picture> avec derives modernes et repli sur le fichier d'origine.
+ *
+ *  PIEGE, verifie : un <source> retenu qui repond 404 ne retombe PAS
+ *  sur l'<img>. La selection se fait sur le type MIME, pas sur
+ *  l'existence du fichier, et l'echec est alors definitif — l'image
+ *  s'affiche cassee. Or les derives .avif/.webp sont produits par la CI
+ *  APRES le commit de l'editeur : sans la reprise ci-dessous, toute
+ *  photo fraichement publiee reste cassee jusqu'au passage du robot,
+ *  et une image que la CI ne traite pas le reste pour toujours.
+ *
+ *  On retire donc les <source> au premier echec et on retente le
+ *  fichier d'origine, le seul dont l'existence soit garantie.
+ *
+ *  @param {string} chemin   chemin absolu du fichier d'origine
+ *  @param {object} rappels  {surCharge, surPerte}
+ *  @returns {{pic: HTMLPictureElement, img: HTMLImageElement}}
+ */
+export function pictureAvecDerives(chemin, {surCharge, surPerte} = {}){
+  const base = chemin.replace(/\.[a-zA-Z0-9]+$/, "");
+  const pic  = document.createElement("picture");
+
+  for(const [type, ext] of [["image/avif",".avif"], ["image/webp",".webp"]]){
+    if(chemin.endsWith(ext)) continue;   // le fichier EST deja ce format
+    const s = document.createElement("source");
+    s.type = type;
+    s.srcset = base + ext;
+    pic.append(s);
+  }
+
+  const img = document.createElement("img");
+  if(surCharge) img.addEventListener("load", surCharge, {once:true});
+
+  // PAS de {once:true} : l'ecouteur doit pouvoir se declencher deux
+  // fois, une par etage de repli. Il s'arrete de lui-meme, faute de
+  // sources a retirer au second passage.
+  img.addEventListener("error", () => {
+    const sources = pic.querySelectorAll("source");
+    if(sources.length){
+      sources.forEach(s => s.remove());
+      img.src = chemin;
+      return;
+    }
+    surPerte?.();
+  });
+
+  img.src = chemin;
+  pic.append(img);
+  return {pic, img};
+}
+
+/* ── Vignette auto-hebergee ───────────────────────────────────
+   Le fichier est depose par .github/workflows/vignette-video.yml, qui
+   le telecharge chez YouTube COTE SERVEUR. Le pointer directement sur
+   i.ytimg.com transmettrait l'IP du visiteur a Google avant tout clic
+   et couterait au site son absence de bandeau cookies.
+
+   Le nom porte l'identifiant de la video : /assets/img/* est en cache
+   sept jours, un nom fixe reecrit servirait l'ancienne image pendant
+   une semaine. Le chemin est reconstruit ici et ecrit la-bas, sans
+   manifeste de part et d'autre — meme convention que la galerie.
+
+   Tant que la CI n'est pas passee, les trois fichiers sont absents :
+   l'erreur de chargement retire l'element et le decor abstrait reste
+   en place. C'est aussi ce qui se passe si la video n'a pas de
+   vignette exploitable. */
+function poserVignette(conteneur, id){
+  const facade = conteneur?.querySelector(".facade");
+  if(!facade) return;
+
+  const {pic, img} = pictureAvecDerives(`/assets/img/video/vignette-${id}.jpg`, {
+    surCharge: () => facade.classList.add("a-vignette"),
+    surPerte:  () => pic.remove()      // rien a montrer : decor abstrait
+  });
+  img.className = "facade-vignette";
+  img.alt = "";                        // decoratif : le bouton porte le libelle
+  img.loading = "lazy";
+  img.decoding = "async";
+  img.width = 1280;
+  img.height = 720;
+  facade.prepend(pic);
+}
+
 /* ── Façade vidéo ─────────────────────────────────────────────
    youtube-nocookie et non youtube : meme apres le clic, le domaine
    sans cookie reduit le pistage. Le clic vaut consentement, ce n'est
@@ -112,6 +194,7 @@ export function monterFacadeVideo({conteneur, bouton, id, titre, vide}){
 
   if(vide) vide.hidden = true;
   bouton.disabled = false;
+  poserVignette(conteneur, id);
   const nom = titre && !titre.startsWith("[") ? titre : "la vidéo live";
   bouton.setAttribute("aria-label",
     `Regarder ${nom} — charge le lecteur YouTube`);

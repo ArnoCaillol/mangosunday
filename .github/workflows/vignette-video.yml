@@ -1,0 +1,73 @@
+# ═══════════════════════════════════════════════════════════════
+# Vignette de la vidéo live
+#
+# Se déclenche quand le groupe change la vidéo depuis l'administration.
+# Télécharge la vignette chez YouTube CÔTÉ SERVEUR, la recompresse et
+# la commite : le visiteur, lui, ne contacte jamais Google avant d'avoir
+# cliqué sur lecture. C'est ce qui permet au site de garder sa promesse
+# de zéro requête tierce, donc son absence de bandeau cookies.
+#
+# Deuxième étape de compilation du dépôt, assumée pour la même raison
+# que la première : elle évite un coût que le CMS ne sait pas absorber.
+# ═══════════════════════════════════════════════════════════════
+name: Vignette de la vidéo live
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/content/site.json'
+  # Sans ce déclencheur, le pipeline n'aurait aucun moyen de tourner
+  # tant que le groupe ne change pas la vidéo : la vignette de la vidéo
+  # en place ne serait jamais générée. Il sert aussi à compléter les
+  # dérivés d'une image déposée à la main. Il n'affaiblit pas le
+  # garde-fou anti-boucle, qui porte sur github.actor.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Deux modifications rapprochées de la vidéo ne doivent pas produire
+# deux commits concurrents sur le même dossier.
+concurrency:
+  group: vignette-video
+  cancel-in-progress: false
+
+jobs:
+  vignette:
+    # GARDE-FOU ANTI-BOUCLE, identique à celui de la compression des
+    # images. Il tient uniquement parce que le push utilise l'identité
+    # par défaut GITHUB_TOKEN : un PAT ou une clé de déploiement
+    # changerait github.actor et réarmerait la boucle.
+    #
+    # Le déclencheur porte sur site.json alors que ce job ne commite
+    # que des images : à lui seul, cela suffirait déjà à ne pas boucler.
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Installer sharp
+        run: npm install --no-save sharp@0.33.5
+
+      - name: Récupérer et compresser la vignette
+        run: node .github/scripts/vignette-video.mjs
+
+      - name: Publier le résultat
+        run: |
+          if [ -z "$(git status --porcelain public/assets/img/video)" ]; then
+            echo "Rien à faire : la vignette est déjà à jour."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A public/assets/img/video
+          git commit -m "Vignette automatique de la vidéo live"
+          git push

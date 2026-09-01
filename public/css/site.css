@@ -383,6 +383,24 @@ strong{font-weight:700}
   position:absolute; z-index:3; bottom:14%; margin:0;
   font-size:.82rem;
 }
+
+/* ── Vignette reelle de la video ──────────────────────────────
+   Injectee par facades.js, et seulement si le fichier existe : la
+   classe a-vignette n'est posee qu'au chargement effectif de l'image.
+   Le decor abstrait (soleil et bandes) reste donc la tant que la CI
+   n'a pas depose la vignette, et disparait des qu'elle arrive. */
+.facade-vignette{
+  position:absolute; inset:0; z-index:1;
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+.facade.a-vignette .facade-soleil,
+.facade.a-vignette .facade-bandes{ display:none }
+/* Voile sombre : le bouton de lecture est blanc-casse cercle d'encre,
+   son contraste ne doit pas dependre de la photo qui passe dessous. */
+.facade.a-vignette::after{
+  content:""; position:absolute; inset:0; z-index:1;
+  background:rgba(30,26,22,.3); pointer-events:none;
+}
 .cadre-video iframe{
   width:100%; aspect-ratio:16/9; height:auto; display:block;
   border:3px solid var(--encre); border-radius:10px; background:#000;

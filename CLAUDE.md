@@ -20,7 +20,7 @@ powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 
 Local preview on http://localhost:8080 serving `public/` via .NET `HttpListener`; add `-Port 8081` when 8080 is bound — the script suggests exactly that. **Mandatory for any front-end work**: `content.js` hydrates with `fetch()`, which browsers block on `file://`, so opening `index.html` directly renders the page in its static placeholder state with no dates and no links.
 
-**Deployment**: pushing to `main` deploys everything — static assets *and* `src/index.js`. There is no deploy workflow and no wrangler CLI invocation in the repo; the only GitHub Actions workflow is image optimisation.
+**Deployment**: pushing to `main` deploys everything — static assets *and* `src/index.js`. There is no deploy workflow and no wrangler CLI invocation in the repo; the two GitHub Actions workflows only compress gallery images and fetch the video thumbnail.
 
 ## Architecture
 
@@ -101,7 +101,9 @@ The veil is **opaque on purpose**: a translucent tint lets the `[BIO COURTE]` ch
 
 ### Privacy posture
 
-Zero third-party requests fire before a user click. Spotify/YouTube players are CSS thumbnails; `facades.js` injects the iframe only on click (`{once:true}`, `loading="lazy"`, `referrerPolicy="strict-origin-when-cross-origin"`, YouTube always via `www.youtube-nocookie.com`). Fonts are self-hosted (4 woff2, latin subset) so no font CDN sees the visitor's IP. This is the whole reason the site ships with **no cookie banner**, and `frame-src` in `_headers` makes it structural.
+Zero third-party requests fire before a user click. Measured: the homepage is 12 requests / 18 KB against a single host, while the YouTube iframe alone costs **14 requests, 965 KB and four Google hosts** (`youtube-nocookie.com`, `fonts.gstatic.com`, `www.google.com`, `jnn-pa.googleapis.com`) before anyone presses play. `nocookie` does suppress cookies — 0 were set — but the requests still carry the visitor's IP, so **the absence of a cookie banner rests on making no request at all, not on the nocookie domain.** Loading the player eagerly, or sourcing the thumbnail from `i.ytimg.com`, both cost that property and would require a consent banner.
+
+The video thumbnail is therefore **self-hosted**, fetched server-side by CI (see below). Spotify/YouTube players stay CSS/thumbnail façades; `facades.js` injects the iframe only on click (`{once:true}`, `loading="lazy"`, `referrerPolicy="strict-origin-when-cross-origin"`, YouTube always via `www.youtube-nocookie.com`). Fonts are self-hosted (4 woff2, latin subset) so no font CDN sees the visitor's IP. This is the whole reason the site ships with **no cookie banner**, and `frame-src` in `_headers` makes it structural.
 
 ### Visual identity (`site.css`)
 
@@ -183,20 +185,34 @@ Removing either unwrap reintroduces a failure with no console error: the block s
 
 ### CI image pipeline (`.github/workflows/optimise-images.yml`)
 
-The repository's only build step, added deliberately against the project's no-build rule. Triggers only on push to `main` touching `public/assets/img/galerie/**`. Resizes to max 1600 px (`withoutEnlargement`), JPEG q82 progressive mozjpeg, PNG compressionLevel 9 + `palette: true`, then derives `.avif` (q55/effort 4) and `.webp` (q78) as **same-basename siblings** — a contract `content.js` reconstructs independently by string-stripping the extension. There is no manifest on either side. sharp is pinned in the workflow YAML; with no `package.json`, that line *is* the dependency declaration.
+The first of the repo's two build steps, added deliberately against the project's no-build rule. Triggers only on push to `main` touching `public/assets/img/galerie/**`. Resizes to max 1600 px (`withoutEnlargement`), JPEG q82 progressive mozjpeg, PNG compressionLevel 9 + `palette: true`, then derives `.avif` (q55/effort 4) and `.webp` (q78) as **same-basename siblings** — a contract `content.js` reconstructs independently by string-stripping the extension. There is no manifest on either side. sharp is pinned in the workflow YAML; with no `package.json`, that line *is* the dependency declaration.
 
 - **The anti-loop guard is `if: github.actor != 'github-actions[bot]'`**, and it works only because the push uses the default `GITHUB_TOKEN` identity. Switching to a PAT or deploy key re-arms an infinite loop; the `concurrency` group serialises runs but does not stop them. `permissions: contents: write` is what lets the bot push at all — remove it (or flip the repo to read-only default permissions) and every run goes green through the optimise step then 403s on `git push`.
 - **There is no `workflow_dispatch`.** To re-run the pipeline you must actually change a file under `galerie/`.
-- **A gallery upload produces two deployments** (editor's commit, then the bot's optimisation commit) — a visitor in that window gets the uncompressed image. The CMS caps uploads at 1 500 000 bytes and 8 photos, so CI compression is a second line of defence, not the first.
+- **A gallery upload produces two deployments** (editor's commit, then the bot's optimisation commit) — a visitor in that window gets the uncompressed image, because the `.avif`/`.webp` siblings do not exist yet. The CMS caps uploads at 1 500 000 bytes and 8 photos, so CI compression is a second line of defence, not the first.
+
+**`<picture>` does not fall back on a 404 — verified, and this is load-bearing.** A `<source>` is chosen on MIME type alone, never on whether the file exists; once chosen, a 404 is a final load error and the `<img src>` is *not* tried. Since the derivatives only appear after the bot's commit, every freshly uploaded photo would render broken for the whole two-deployment window, and any image CI skips would stay broken forever. `pictureAvecDerives()` in facades.js is what prevents that: on the first `error` it strips the `<source>` elements and retries the original file, which is the only one guaranteed to exist. Both the gallery and the video thumbnail go through it. **Do not "simplify" it back to a plain `<picture>`**, and note its `error` listener deliberately omits `{once:true}` — it must fire once per fallback tier.
 - **`.rotate()` bakes in EXIF orientation.** A portrait phone photo is physically rotated by the bot commit, which is why a re-upload sometimes "fixes" a sideways photo on its own.
 - **Derivatives are made from the recompressed file, not the original.** Steps 1–2 rewrite the source in place, then step 3 re-reads it, so `.avif`/`.webp` inherit the q82 JPEG's generation loss. Raising JPEG quality improves all three outputs; raising only AVIF/WebP quality cannot recover what step 2 discarded.
-- **`readdir` is not recursive** but the path filter is `**`. A photo in `galerie/2026/` triggers a full CI run and is silently skipped, then served unoptimised — the `<source>` elements 404 and the browser falls back to the original, so the page still looks correct.
+- **`readdir` is not recursive** but the path filter is `**`. A photo in `galerie/2026/` triggers a full CI run and is silently skipped, then served unoptimised. It still *displays*, but only because of `pictureAvecDerives` — see below; the fallback is not something `<picture>` does on its own.
 - **Only `.jpg`/`.jpeg`/`.png` are processed.** Anything else (`.webp`, `.heic`, …) is committed and served untouched.
 - **Derivative names collide across extensions**: `photo.jpg` and `photo.png` both write `photo.avif`/`photo.webp`; readdir order decides the winner.
 - **Per-image failures are swallowed** — logged as `ignorée <file>` and the step stays green. A total failure is indistinguishable from an already-optimised folder except in the job log.
 - **Staleness is mtime-based and meaningless on CI** (`actions/checkout` rewrites all timestamps). Replacing an image under the same filename can leave the previous `.avif`/`.webp` in place, so modern browsers show the old photo while the `<img>` fallback holds the new one. Combined with the 7-day `/assets/img/*` cache: **always give a new photo a new filename.**
 - PNGs re-enter the recompression branch every run (`isProgressive` is never set for PNG output), so idempotence rests on byte-identical sharp output plus the `git status --porcelain` check. `palette: true` also quantises to 256 colours, which bands photographic PNGs.
 - `public/assets/img/galerie/` is empty and therefore untracked — it does not exist in a fresh clone; the script handles that by logging and returning.
+
+### Video thumbnail pipeline (`.github/workflows/vignette-video.yml`)
+
+The repo's **second** build step. Triggers on push to `main` touching `public/content/site.json`, plus `workflow_dispatch` — the gallery workflow's lack of a manual trigger is a known annoyance, and here it is also the only way to generate a thumbnail for a video that is already in place. Downloads `i.ytimg.com/vi/<id>/{maxresdefault,sddefault,hqdefault}.jpg` server-side, recompresses with the gallery's exact settings, derives `.avif`/`.webp`, and commits to `public/assets/img/video/`.
+
+- **The filename carries the video id** (`vignette-<id>.jpg`). `_headers` caches `/assets/img/*` for 7 days, so overwriting a fixed name would serve the previous video's thumbnail for a week. `facades.js` rebuilds the same path from `idYoutube()` — no manifest on either side, same convention as the gallery derivatives.
+- **`idYoutube()` is duplicated into the CI script**, and the copy is marked as such. It cannot be imported: with no `package.json` there is no `type` field, so Node reads a `.js` as CommonJS and the ES import fails. **Changing `idYoutube()` in facades.js means changing it in `vignette-video.mjs` too** — if they diverge, CI writes a file under a name the browser never requests, the thumbnail silently never appears, and the abstract façade just stays.
+- **YouTube sometimes serves a grey 120×90 image instead of a 404**, so variants under 640 px wide are rejected rather than trusted.
+- If no variant is usable the script **returns without deleting anything** — keeping a stale thumbnail beats falling back to the abstract façade by accident.
+- Source and derivatives are checked separately, so a `.jpg` dropped in by hand gets its `.avif`/`.webp` completed on the next run rather than being treated as already done.
+- No loop is possible: the trigger watches `site.json` while the job only ever commits images, and the `github.actor` guard backs that up.
+- `.facade` keeps its abstract decor (`.facade-soleil`, `.facade-bandes`) until the image actually loads — `facades.js` adds `a-vignette` in the `load` handler, never optimistically. The `::after` scrim exists so the play button's contrast does not depend on the photo underneath.
 
 ### CMS pinning
 
