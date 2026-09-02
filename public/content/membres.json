@@ -5,28 +5,48 @@
       "instruments": "Chant · Guitare",
       "photo": "",
       "bio": "",
-      "liens": { "instagram": "", "youtube": "", "tiktok": "", "site": "" }
+      "liens": {
+        "instagram": "",
+        "youtube": "",
+        "tiktok": "",
+        "site": ""
+      }
     },
     {
       "prenom": "Andréa",
       "instruments": "Guitare · Chœurs",
       "photo": "",
       "bio": "",
-      "liens": { "instagram": "", "youtube": "", "tiktok": "", "site": "" }
+      "liens": {
+        "instagram": "",
+        "youtube": "",
+        "tiktok": "",
+        "site": ""
+      }
     },
     {
       "prenom": "Arnaud",
       "instruments": "Basse · Chœurs",
       "photo": "",
       "bio": "",
-      "liens": { "instagram": "", "youtube": "", "tiktok": "", "site": "" }
+      "liens": {
+        "instagram": "https://www.instagram.com/arnaud.caillol/",
+        "youtube": "",
+        "tiktok": "",
+        "site": ""
+      }
     },
     {
       "prenom": "Thomas",
       "instruments": "Batterie · Chœurs",
       "photo": "",
       "bio": "",
-      "liens": { "instagram": "", "youtube": "", "tiktok": "", "site": "" }
+      "liens": {
+        "instagram": "",
+        "youtube": "",
+        "tiktok": "",
+        "site": ""
+      }
     }
   ]
 }
