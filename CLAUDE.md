@@ -56,22 +56,19 @@ Field-level contracts between `config.yml` and the JS, none of them validated:
 ### Where content lives (three layers)
 
 - **CMS-editable**, the entire perimeter by design: bandeau, écoute links + featured track, live video, short bio, dates, gallery, and the band roster. Nothing else.
-- **Hard-coded in `index.html`**: `<title>`, meta description, Open Graph, `h1`, baseline, and the **long** bio. All SEO-bearing text is served on the first request and is intentionally unreachable from the CMS.
-- **The band roster has no hard-coded copy at all.** `membres.json` is the single source; `index.html` ships an empty `ul.membres` inside a hidden `div.membres-enveloppe`. It briefly had a served fallback of four `li`, dropped on purpose: keeping it in sync was a silent double entry, a stale `member` array asserted a wrong line-up to non-rendering crawlers, and an intentionally emptied roster could not be expressed. **Member first names carry no search value** — what actually ranks (title, meta description, `h1`, baseline, long bio, `MusicGroup`) is still hard-coded — so client rendering costs nothing real here. Emptying the list now correctly hides the whole block, gallery-style.
+- **Hard-coded in `index.html`**: `<title>`, meta description, Open Graph, `h1`, and the **long** bio. All SEO-bearing text is served on the first request and is intentionally unreachable from the CMS.
+- **The band roster has no hard-coded copy at all.** `membres.json` is the single source; `index.html` ships an empty `ul.membres` inside a hidden `div.membres-enveloppe`. It briefly had a served fallback of four `li`, dropped on purpose: keeping it in sync was a silent double entry, a stale `member` array asserted a wrong line-up to non-rendering crawlers, and an intentionally emptied roster could not be expressed. **Member first names carry no search value** — what actually ranks (title, meta description, `h1`, long bio, `MusicGroup`) is still hard-coded — so client rendering costs nothing real here. Emptying the list now correctly hides the whole block, gallery-style.
 - **Hard-coded in `mentions-legales.html`**: all four legal placeholders. Layout, art direction, legal notices and SEO are excluded from the CMS by design.
 
 Every bracketed token left in the source renders as a visible dashed `.ph` chip:
 
 | Token | Where | Layer |
 |---|---|---|
-| `[VILLE]` | index.html, baseline | HTML edit |
 | `[BIO LONGUE — 200 mots]` | index.html, section « Le groupe » | HTML edit only |
 | `[NOM DE L'ÉDITEUR]`, `[STATUT JURIDIQUE …]`, `[ADRESSE POSTALE]`, `[NOM]` | mentions-legales.html | HTML edit only |
 | `[BIO COURTE — 50 mots]` | index.html *and* site.json | CMS `bio_courte` — the one CMS field still holding a literal placeholder |
 
 The hero's `[TITRE DU MORCEAU]` and the video façade's `[VIDÉO LIVE À VENIR]` are **gone on purpose**: their `site.json` values have been filled, so the static HTML now carries neutral fallback copy (`le morceau`, `Vidéo live à venir`) instead of a chip. `le morceau` is *exactly* facades.js's own fallback string — keep the two in sync, or a slow connection shows one wording and the hydrated page another. **Do not reintroduce bracket chips on a block that has real content**; a visitor on a slow link would see them.
-
-The README checklist claims `[VILLE]` also appears in `<title>` and the meta description. **It does not** — those read finished copy. Do not inject a city into them.
 
 ### Hydration contract (`content.js`)
 

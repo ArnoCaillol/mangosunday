@@ -2,7 +2,7 @@
    content.js — hydratation cote client (chemin 1)
 
    Le texte a valeur SEO est ECRIT EN DUR dans index.html : titre,
-   meta-description, Open Graph, h1, baseline, bio longue. Ce module
+   meta-description, Open Graph, h1 et bio longue. Ce module
    ne remplit que les blocs volatils, ceux que le groupe edite :
    bandeau, liens d'ecoute, video, bio courte, galerie, dates.
 
@@ -263,7 +263,7 @@ function monterGalerie(items){
    Contrepartie : les prenoms ne sont plus dans la premiere reponse.
    Arbitrage assume, les prenoms d'un groupe n'ayant pas de valeur
    de recherche ; ce qui compte pour le referencement (titre, meta,
-   h1, baseline, bio longue, MusicGroup) reste en dur. */
+   h1, bio longue, MusicGroup) reste en dur. */
 function carteMembre(m){
   const prenom = m.prenom.trim();
   const li = document.createElement("li");

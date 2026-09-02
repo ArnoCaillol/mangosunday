@@ -183,9 +183,14 @@ strong{font-weight:700}
 .nuit .chapo{ color:var(--nuit-texte) }
 
 /* ═══ ① PREMIER ÉCRAN ═══════════════════════════════════════
-   Budget vertical verifie a 360x640, bandeau ACTIF :
-   32 + 208 + 40 + 58 + 74 + 58 = 470 px. Marge : 170 px, laissee
-   volontairement pour que le bloc suivant depasse et signale la suite. */
+   Contrainte dure : le bouton d'ecoute reste visible SANS defilement
+   a 360x640, bandeau ACTIF. Remesure apres le retrait de la baseline :
+   32 (padding) + 208 (logo) + 60 (bandeau, marge comprise)
+   + 157 (actions) + 40 (padding) = 497 px de hero, le bas du bouton
+   tombant a 392 px, soit 248 px de marge. Les 143 px restants sont
+   laisses volontairement : le bloc suivant depasse et signale la suite.
+   Toute ligne ajoutee ici se paie sur cette marge, et la casse est
+   invisible sur un ecran de bureau. */
 .hero{
   position:relative;
   padding:32px 0 40px;
@@ -212,13 +217,6 @@ strong{font-weight:700}
   width:min(208px,58vw); height:auto;
   border-radius:12px;
 }
-.baseline{
-  margin:14px 0 0;
-  font-size:1.05rem; font-weight:600;
-  letter-spacing:.02em; color:var(--brun-encre);
-  max-width:none;
-}
-
 .bandeau{
   display:flex; align-items:center; flex-wrap:wrap; gap:6px 9px;
   margin:14px 0 0; padding:9px 14px;
@@ -574,19 +572,19 @@ strong{font-weight:700}
   .hero{ padding:56px 0 48px }
   /* Le logo occupe la colonne de gauche sur toute la hauteur ; le
      reste s'empile a droite. Sans placement explicite, le placement
-     automatique renvoie le bandeau sous le logo. */
+     automatique renvoie le bandeau sous le logo. Les lignes sont donc
+     numerotees a la main : en retirer un element oblige a renumeroter,
+     sinon la premiere ligne reste vide. */
   .hero-in{
     display:grid;
     grid-template-columns:auto minmax(0,1fr);
-    grid-template-rows:auto auto auto;
+    grid-template-rows:auto auto;
     column-gap:44px; align-items:center;
   }
   .hero-logo{ grid-column:1; grid-row:1 / -1 }
-  .baseline{ grid-column:2; grid-row:1 }
-  .bandeau{ grid-column:2; grid-row:2 }
-  .hero-actions{ grid-column:2; grid-row:3 }
+  .bandeau{ grid-column:2; grid-row:1 }
+  .hero-actions{ grid-column:2; grid-row:2 }
   .hero-logo img{ width:248px }
-  .baseline{ margin-top:0; font-size:1.2rem }
   .hero-actions{ flex-direction:row; align-items:center; flex-wrap:wrap; gap:14px }
   .lecteur-phare{ width:auto }
   h3{ font-size:1.15rem }

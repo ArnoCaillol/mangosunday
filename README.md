@@ -60,7 +60,7 @@ Puis <http://localhost:8080>. Node n'étant pas requis, le serveur s'appuie sur
 ### Architecture
 
 - **Le texte à valeur SEO est écrit en dur** dans `index.html` : titre, méta-description,
-  Open Graph, `h1`, baseline et **bio longue**. Il est servi dès la première requête.
+  Open Graph, `h1` et **bio longue**. Il est servi dès la première requête.
 - **Seuls les blocs volatils sont hydratés** côté client depuis `public/content/*.json`
   par `js/content.js`, qui injecte aussi le balisage `MusicEvent`.
 - **Aucune requête vers un tiers avant un clic.** Les lecteurs Spotify et YouTube sont
@@ -151,7 +151,6 @@ Dans cet ordre.
 Aucun placeholder ne doit survivre. Ils sont tous visibles à l'écran, entre crochets
 et sur fond tireté.
 
-- [ ] `[VILLE]` — baseline du premier écran, **et** `<title>` + méta-description
 - [ ] `[BIO COURTE]` — via l'administration
 - [ ] `[BIO LONGUE]` — dans `index.html`, section « Le groupe »
 - [x] `[PRÉNOM]` et `[instrument]` × 4 — via l'administration, seule source
