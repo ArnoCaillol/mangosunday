@@ -46,6 +46,12 @@
   "image": "https://mangosunday.com/assets/img/og.png",
   "genre": ["Surf rock", "Pop rock", "Garage rock"],
   "description": "Groupe de surf rock et pop-rock aux influences 60s-70s.",
+  "member": [
+    {"@type":"Person","name":"Fabien","description":"Chant · Guitare"},
+    {"@type":"Person","name":"Andréa","description":"Guitare · Chœurs"},
+    {"@type":"Person","name":"Arnaud","description":"Basse · Chœurs"},
+    {"@type":"Person","name":"Thomas","description":"Batterie · Chœurs"}
+  ],
   "email": "contact@mangosunday.com"
 }
 </script>
@@ -137,7 +143,14 @@
       </details>
 
       <h3>Qui joue</h3>
-      <ul class="membres">
+      <!-- REPLI SERVI. Ces quatre membres sont le contenu indexable,
+           present des la premiere requete et sans JavaScript.
+           content.js les remplace par membres.json des que le CMS a
+           des donnees. Un vrai changement de formation demande donc
+           AUSSI de retoucher ces lignes : sinon un visiteur sans JS,
+           et le JSON-LD de secours juste au-dessus, montrent encore
+           l'ancienne formation. -->
+      <ul class="membres" data-membres>
         <li><span class="prenom">Fabien</span><span class="instrument">Chant · Guitare</span></li>
         <li><span class="prenom">Andréa</span><span class="instrument">Guitare · Chœurs</span></li>
         <li><span class="prenom">Arnaud</span><span class="instrument">Basse · Chœurs</span></li>

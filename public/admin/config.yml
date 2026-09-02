@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════
 # Sveltia CMS — schema d'edition
-# Ce fichier EST le perimetre d'edition : cinq blocs, rien de plus.
+# Ce fichier EST le perimetre d'edition : sept blocs, rien de plus.
 # La structure de la page, la direction artistique, les mentions
 # legales et les metadonnees SEO ne sont volontairement pas ici.
 #
@@ -141,3 +141,52 @@ collections:
               - { name: alt, label: "Description de l'image", widget: string,
                   hint: "Décrire ce qu'on voit. Sert aux personnes aveugles et au référencement." }
               - { name: credit, label: "Crédit photo", widget: string, required: false }
+
+  # ── 7 : les membres du groupe ────────────────────────────────
+  - name: membres
+    label: "Membres du groupe"
+    files:
+      - name: liste
+        label: "Qui joue"
+        file: "public/content/membres.json"
+        description: >-
+          Prénom, instruments, photo, bio et réseaux de chaque membre.
+          Tant que cette liste est vide, le site affiche la formation
+          écrite en dur dans la page : la vider ne fait donc PAS
+          disparaître la section.
+        fields:
+          - name: membres
+            label: "Membres"
+            label_singular: "Membre"
+            widget: list
+            summary: "{{fields.prenom}} — {{fields.instruments}}"
+            fields:
+              - { name: prenom, label: "Prénom", widget: string }
+              - { name: instruments, label: "Instruments", widget: string,
+                  hint: "Séparer par « · ». Exemple : Chant · Guitare" }
+              - name: photo
+                label: "Photo"
+                widget: image
+                required: false
+                media_library: { config: { max_file_size: 1500000 } }
+                hint: >-
+                  1,5 Mo maximum, cadrage carré de préférence. Toujours
+                  donner un NOUVEAU nom de fichier : réemployer un nom
+                  déjà utilisé montre l'ancienne photo pendant une
+                  semaine aux visiteurs déjà venus.
+              - name: bio
+                label: "Bio"
+                widget: text
+                required: false
+                hint: >-
+                  Deux ou trois phrases. Repliée derrière un bouton
+                  « Bio » sur le site, pour ne pas allonger la section.
+              - name: liens
+                label: "Réseaux du membre"
+                widget: object
+                collapsed: true
+                fields:
+                  - { name: instagram, label: Instagram,    widget: string, required: false, pattern: ['^$|^https?://', "https:// ou vide"] }
+                  - { name: youtube,   label: YouTube,      widget: string, required: false, pattern: ['^$|^https?://', "https:// ou vide"] }
+                  - { name: tiktok,    label: TikTok,       widget: string, required: false, pattern: ['^$|^https?://', "https:// ou vide"] }
+                  - { name: site,      label: "Site perso", widget: string, required: false, pattern: ['^$|^https?://', "https:// ou vide"] }

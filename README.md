@@ -11,7 +11,7 @@ ce qui est servi.
 Tout se passe sur **https://mangosunday.com/admin/**, depuis un ordinateur ou un
 téléphone. Connexion avec votre compte GitHub.
 
-Six choses sont modifiables, et rien d'autre :
+Sept choses sont modifiables, et rien d'autre :
 
 | Ce que vous modifiez | Où ça apparaît |
 |---|---|
@@ -21,6 +21,7 @@ Six choses sont modifiables, et rien d'autre :
 | Vidéo live | La section sur fond noir |
 | Bio courte | Section « Le groupe » |
 | Dates et galerie photo | Leurs sections respectives |
+| Membres du groupe | Section « Le groupe », sous « Qui joue » |
 
 **Vos modifications sont en ligne en une minute environ.** Si rien ne change,
 attendre deux minutes et recharger la page.
@@ -153,7 +154,8 @@ et sur fond tireté.
 - [ ] `[VILLE]` — baseline du premier écran, **et** `<title>` + méta-description
 - [ ] `[BIO COURTE]` — via l'administration
 - [ ] `[BIO LONGUE]` — dans `index.html`, section « Le groupe »
-- [x] `[PRÉNOM]` et `[instrument]` × 4 — dans `index.html`
+- [x] `[PRÉNOM]` et `[instrument]` × 4 — via l'administration ; `index.html`
+      garde la formation en repli, à retoucher si elle change vraiment
 - [x] `[TITRE DU MORCEAU]` et son lien — via l'administration
 - [x] `[VIDÉO LIVE À VENIR]` — via l'administration
 - [x] Liens des plateformes et réseaux — via l'administration

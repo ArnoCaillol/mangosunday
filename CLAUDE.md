@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-"Mango Sunday" — a hand-written single-page promotional site for a band, deployed on **Cloudflare Workers + Static Assets** (not Pages). `public/` is served byte-for-byte as written. A Sveltia CMS at `/admin/` lets the band edit six things; saves become commits on `main`, which redeploy the site. The single-file Worker `src/index.js` exists only to relay GitHub OAuth for that CMS.
+"Mango Sunday" — a hand-written single-page promotional site for a band, deployed on **Cloudflare Workers + Static Assets** (not Pages). `public/` is served byte-for-byte as written. A Sveltia CMS at `/admin/` lets the band edit seven things; saves become commits on `main`, which redeploy the site. The single-file Worker `src/index.js` exists only to relay GitHub OAuth for that CMS.
 
 **Everything is documented in French** — README, comment headers, console output, CMS labels, and even source identifiers. Write new comments and documentation in French to match.
 
@@ -34,13 +34,14 @@ Local preview on http://localhost:8080 serving `public/` via .NET `HttpListener`
 
 ### Content round-trip
 
-Editor saves in `/admin/` → Sveltia commits via the GitHub API to `ArnoCaillol/mangosunday`, branch `main`, authored by the editor's own GitHub account, message `Update <collection label> "<file name>"` (`Create …` on a file's first save, cf. `933b94f`) → Cloudflare's Git integration redeploys → `content.js` fetches three JSON files on load and hydrates the volatile blocks. `publish_mode: simple` — no draft/review gate, every save goes live. `/content/*` is cached 300 s, so a save is not visible immediately.
+Editor saves in `/admin/` → Sveltia commits via the GitHub API to `ArnoCaillol/mangosunday`, branch `main`, authored by the editor's own GitHub account, message `Update <collection label> "<file name>"` (`Create …` on a file's first save, cf. `933b94f`) → Cloudflare's Git integration redeploys → `content.js` fetches four JSON files on load and hydrates the volatile blocks. `publish_mode: simple` — no draft/review gate, every save goes live. `/content/*` is cached 300 s, so a save is not visible immediately.
 
 | Collection / file | JSON | Top-level shape read by content.js |
 |---|---|---|
 | `site` / `general` | `content/site.json` | object: `bandeau`, `ecoute`, `video`, `bio_courte` |
 | `dates` / `liste` | `content/dates.json` | **object** `{"dates":[…]}` — unwrapped via `data.dates \|\| []`; items `{date,heure,salle,ville,pays,url_billets,complet}` |
 | `galerie` / `photos` | `content/galerie.json` | **object** `{"photos":[…]}` once the CMS has saved — unwrapped via `data.photos \|\| data`, which also tolerates the bare `[]` still on disk; items `{fichier,alt,credit}`, max 8 |
+| `membres` / `liste` | `content/membres.json` | **object** `{"membres":[…]}` — unwrapped via `data.membres \|\| data`; items `{prenom,instruments,photo,bio,liens{instagram,youtube,tiktok,site}}`, no cap, so no `slice` bounds the render either |
 
 **A top-level `list` field is serialised by Sveltia as an object keyed by the field name, not a bare array.** Applies to every new collection. It already bit `dates.json` on the CMS's first save.
 
@@ -54,8 +55,11 @@ Field-level contracts between `config.yml` and the JS, none of them validated:
 
 ### Where content lives (three layers)
 
-- **CMS-editable**, the entire perimeter by design: bandeau, écoute links + featured track, live video, short bio, dates, gallery. Nothing else. (`config.yml:3` still says "cinq blocs" — stale; the numbered blocks and the README both say six.)
-- **Hard-coded in `index.html`**: `<title>`, meta description, Open Graph, `h1`, baseline, the **long** bio, and the **band roster** (`<h3>Qui joue</h3>` + `ul.membres`, four `li` each holding `.prenom` and `.instrument`). All SEO-bearing text is served on the first request and is intentionally unreachable from the CMS. The roster shares its `repeat(auto-fit, minmax(190px,1fr))` grid with `.galerie`, so adding or removing a member needs no CSS change.
+- **CMS-editable**, the entire perimeter by design: bandeau, écoute links + featured track, live video, short bio, dates, gallery, and the band roster. Nothing else.
+- **Hard-coded in `index.html`**: `<title>`, meta description, Open Graph, `h1`, baseline, and the **long** bio. All SEO-bearing text is served on the first request and is intentionally unreachable from the CMS.
+- **The band roster is both** — the one block with a *served fallback the CMS overrides*. `index.html` keeps four `li` (`.prenom` + `.instrument`) so the names are in the first response and survive with no JS; `monterMembres` replaces the whole list the moment `membres.json` holds at least one member with a real `prenom`. Every bail leaves the fallback standing, and that is the entire mechanism — **do not add a `hidden` attribute or a loading veil to `ul.membres`**, either would blank real content. Two consequences:
+  - **The fallback goes stale silently.** Change the line-up in the CMS and the served HTML — plus the `member` array seeded into `#ld-groupe` — still lists the old one for no-JS visitors and first paint. A real line-up change means editing `index.html` too; the markup carries a comment saying so.
+  - **A roster emptied on purpose cannot be expressed.** Never-saved and deliberately-emptied are both `{"membres":[]}`, byte for byte, so the fallback comes back. Documented as unsupported rather than worked around.
 - **Hard-coded in `mentions-legales.html`**: all four legal placeholders. Layout, art direction, legal notices and SEO are excluded from the CMS by design.
 
 Every bracketed token left in the source renders as a visible dashed `.ph` chip:
@@ -80,7 +84,8 @@ The README checklist claims `[VILLE]` also appears in `<title>` and the meta des
 - `#dates` is the **last** section in `<main>` as served (zone ⑥, after `#booking` ⑤) — with zero or one upcoming date it renders at the bottom of the page. With ≥2 upcoming dates `groupe.parentNode.insertBefore(section, groupe)` moves it above `#groupe` ④, jumping `#booking` too. That call succeeds whatever `#dates`'s own parent is; the result is sane only because both are direct children of `<main>`. Nesting either changes where `#dates` lands.
 - Past dates are filtered against the **visitor's local clock**; a date with no `heure` defaults to **23:59**, which is what makes "a past date disappears by itself the next day" true. Nothing prunes `dates.json` server-side.
 - `ecoute.liens` is one object driving three renderings — the "Écouter ailleurs" list, the footer socials, and the JSON-LD `sameAs`. They cannot diverge.
-- JSON-LD is built two ways: `sameAs` is mutated in place inside the existing `#ld-groupe` script; MusicEvents are appended as a **separate** script holding a bare array that references the group by the hard-coded `{"@id":"https://mangosunday.com/#groupe"}` — keep it in sync with the seed in `index.html`.
+- JSON-LD is built two ways: `sameAs` and `member` are mutated in place inside the existing `#ld-groupe` script; MusicEvents are appended as a **separate** script holding a bare array that references the group by `` `${SITE}/#groupe` `` — keep it in sync with the seed in `index.html`, which spells the same origin out.
+- **The `#ld-groupe` rewrite must stay outside any single property's guard.** It used to sit inside `if(sameAs.length)`, so anything else written onto the object vanished whenever `ecoute.liens` yielded no valid URL. It is now `if(sameAs.length || member.length)`. Add a third contribution and widen that condition, or it will silently never be written.
 - `animerBandes()` runs *before* any fetch, so stripe animation survives total content failure.
 
 ### The loading veil (`data-attente`)
@@ -147,7 +152,7 @@ Cutover is three coordinated edits, all required together:
 2. `base_url` in `config.yml` → the new origin (trap 4)
 3. Delete `X-Robots-Tag: noindex` **from inside the `/*` block** of `_headers`. `_headers` is a block format — an indented line belongs to the preceding path, so appending it at the end of the file would land it in `/content/*` and cover only the three JSON files. This makes only the homepage indexable, and that is the intent: both legal pages carry their own permanent `<meta name="robots" content="noindex, follow">` and `sitemap.xml` deliberately lists `/` alone, its comment noting that listing noindex pages would be a contradictory signal. **Do not remove the per-page metas along with the global header**; `follow` rather than `nofollow` is also deliberate, so link equity still flows from the footer.
 
-### Both list collections are unwrapped in `demarrer()` — keep it that way
+### All three list collections are unwrapped in `demarrer()` — keep it that way
 
 `monterDates` and `monterGalerie` both bail on a non-array (`monterGalerie` on `!Array.isArray(items)`), and Sveltia writes a top-level list as an object. So `demarrer()` unwraps each one inline: `data.dates || []` for dates, `data.photos || data` for the gallery. The gallery form differs on purpose — `|| data` keeps working while `galerie.json` is still the hand-committed bare `[]`, and starts unwrapping by itself the moment the band's first save turns it into `{"photos":[…]}`.
 
@@ -160,7 +165,8 @@ Removing either unwrap reintroduces a failure with no console error: the block s
 - **Booleans are compared with `=== true`.** A string `"true"` in `bandeau.actif` or `complet` makes the banner never show, and a sold-out concert render its ticket link.
 - **`plateforme` offers spotify/bandcamp/youtube but only Spotify can embed**, and only when `url_phare` is an `open.spotify.com` URL matching `/track|album|playlist|artist|episode/ID`. Anything else replaces the `<button>` with an `<a target="_blank">` — a working but different UI. Note `bouton.replaceWith(a)` discards the whole button, **including the `[data-titre-phare]` span and its dashed chip**: with an unfilled `titre_phare` the link just reads "Écouter le morceau". That is the one place where a missing chip is not evidence of filled content. The chip persists only in the other branch — an invalid `url_phare`, which just leaves the button `disabled`.
 - **Two divergent placeholder tests**: `estPlaceholder()` in content.js (not exported) vs the weaker `titre && !titre.startsWith("[")` in facades.js. They disagree on values like `" [TITRE]"`.
-- **`ecoute.liens` keys must stay in sync with `etiquette()`** in facades.js (spotify, bandcamp, youtube, instagram, deezer, apple), which falls back to `|| cle`. A seventh platform renders a link labelled with the raw lowercase key.
+- **Platform keys must stay in sync with `etiquette()`** in facades.js — `spotify, bandcamp, youtube, instagram, deezer, apple` for the band, plus `tiktok, site` for members. It falls back to `|| cle`, so an unmapped key renders a link labelled with the raw lowercase key. Adding a label is safe and additive: all three renderings iterate the JSON's own keys, never `etiquette()`'s.
+- **`lienPlateforme(cle, url, contexte)`** takes an optional third argument that goes into the `aria-label` (`Instagram de Fabien — …`). Member cards pass the first name because four members with an Instagram account would otherwise put four indistinguishable "Instagram" links on the page. The band's own two call sites omit it.
 - **An element toggled by `hidden` needs its own `[hidden]{display:none}` rule as soon as its base rule sets a `display`** — otherwise that `display` beats the UA `[hidden]` rule and the "empty field makes the block disappear" promise breaks. Load-bearing today: `.bandeau` and `.dates` (both `display:flex`). `.bloc` and `.etat-vide` also carry the rule but set no `display`, so theirs is belt-and-braces.
 - **The 3px `--encre` border on `.btn` is accessibility, not decoration**: mangue on sable is 1,65:1 against its surround and the border is what satisfies WCAG 1.4.11. On light grounds text must be `--encre`/`--terre-encre`/`--brun-encre`, never mangue/orange (2,1:1); mangue is typographic only inside `.nuit` (7,2:1) — the sole asymmetry in the palette and the only reason the dark band exists.
 - **The hero has a hard vertical budget**: the play button must stay visible without scrolling at 360×640 with the banner active. Breakage is invisible on desktop.
@@ -216,4 +222,6 @@ The repo's **second** build step. Triggers on push to `main` touching `public/co
 
 ### CMS pinning
 
-**Do not remove the version pin** (`@sveltia/cms@0.201.1` on unpkg — the CMS is pre-1.0 and the admin could break overnight with no repo change) and **do not add `type="module"`** (the distributed bundle is a classic script). The config is kept Decap-compatible so swapping CMS means replacing exactly that one script tag. `media_folder` is the repo path `public/assets/img/galerie`; `public_folder` is the browser path `/assets/img/galerie` — `content.js` independently rejects any `fichier` not starting with `/assets/img/` or `assets/img/`.
+**Do not remove the version pin** (`@sveltia/cms@0.201.1` on unpkg — the CMS is pre-1.0 and the admin could break overnight with no repo change) and **do not add `type="module"`** (the distributed bundle is a classic script). The config is kept Decap-compatible so swapping CMS means replacing exactly that one script tag. `media_folder` is the repo path `public/assets/img/galerie`; `public_folder` is the browser path `/assets/img/galerie` — `cheminImage()` in content.js independently rejects any path not starting with `/assets/img/` or `assets/img/`, and that check is deliberately on `/assets/img/`, not on the gallery folder.
+
+**`media_folder` is global and cannot be overridden per field in this config**, so member portraits land in `galerie/` alongside stage photos. That is deliberate: the gallery CI enumerates that folder by extension without ever reading `galerie.json`, so portraits get compressed for free and **no change to a pipeline that has never actually run** was needed. The media library therefore mixes both kinds of image; nothing about the display is affected, because `monterGalerie` renders an explicit list rather than the folder. `max_file_size` is a **per-field** cap, not inherited — a new image field without its own `media_library` block has no size limit at all.

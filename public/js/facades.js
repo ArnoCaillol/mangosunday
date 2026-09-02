@@ -211,6 +211,9 @@ export function monterFacadeVideo({conteneur, bouton, id, titre, vide}){
 export function etiquette(cle){
   return ({
     spotify:"Spotify", bandcamp:"Bandcamp", youtube:"YouTube",
-    instagram:"Instagram", deezer:"Deezer", apple:"Apple Music"
+    instagram:"Instagram", deezer:"Deezer", apple:"Apple Music",
+    // Reseaux par membre. Sans ces deux cles, le libelle retomberait
+    // sur la cle brute en minuscules : piege deja documente.
+    tiktok:"TikTok", site:"Site"
   })[cle] || cle;
 }

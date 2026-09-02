@@ -30,6 +30,17 @@ function poserTexte(el, valeur){
   return true;
 }
 
+/** Valide un chemin d'image venant du CMS et le normalise en absolu.
+ *  Ces chemins ne passent PAS par urlSure(), qui les rejetterait : ce
+ *  ne sont pas des URL. Le prefixe est la seule barriere, et il porte
+ *  sur /assets/img/ et non sur le seul dossier de la galerie. */
+function cheminImage(valeur){
+  if(typeof valeur !== "string" || valeur.trim() === "") return null;
+  const chemin = valeur.trim();
+  if(!chemin.startsWith("/assets/img/") && !chemin.startsWith("assets/img/")) return null;
+  return chemin.startsWith("/") ? chemin : "/" + chemin;
+}
+
 async function lireJSON(chemin){
   const r = await fetch(chemin, {cache:"no-cache"});
   if(!r.ok) throw new Error(`${chemin} : HTTP ${r.status}`);
@@ -62,7 +73,13 @@ function monterBandeau(bandeau){
 }
 
 /* ── ② Liens d'ecoute et reseaux ─────────────────────────────── */
-function lienPlateforme(cle, url){
+/** Un lien de plateforme.
+ *
+ *  « contexte » desambigue l'intitule quand la page porte plusieurs
+ *  liens identiques : quatre membres ayant un compte Instagram
+ *  donneraient sinon quatre liens « Instagram » que rien ne distingue
+ *  au lecteur d'ecran. Les appels du groupe l'omettent. */
+function lienPlateforme(cle, url, contexte){
   const u = urlSure(url);
   if(!u) return null;
   const li = document.createElement("li");
@@ -71,7 +88,8 @@ function lienPlateforme(cle, url){
   a.target = "_blank";
   a.rel = "noopener noreferrer";
   a.textContent = etiquette(cle);
-  a.setAttribute("aria-label", `${etiquette(cle)} — ouvre un nouvel onglet`);
+  const quoi = contexte ? `${etiquette(cle)} de ${contexte}` : etiquette(cle);
+  a.setAttribute("aria-label", `${quoi} — ouvre un nouvel onglet`);
   li.append(a);
   return li;
 }
@@ -193,19 +211,18 @@ function monterDates(brut){
 }
 
 /* ── ④ Galerie ────────────────────────────────────────────────
-   <picture> avec les derives AVIF/WebP produits par la CI. Si la CI
-   n'a pas encore tourne, les <source> echouent et le <img> d'origine
-   prend le relais : degradation propre, jamais d'image manquante. */
+   <picture> avec les derives AVIF/WebP produits par la CI. ATTENTION :
+   quand un <source> repond 404, le repli sur le <img> d'origine n'est
+   PAS automatique — c'est pictureAvecDerives qui l'assure. Voir son
+   commentaire dans facades.js. */
 function monterGalerie(items){
   const ul  = $("[data-galerie]");
   const env = $("[data-bloc-galerie]");
   if(!ul || !Array.isArray(items) || items.length === 0) return;
 
   const noeuds = items.slice(0, 8).map((it, i) => {
-    if(typeof it?.fichier !== "string" || it.fichier.trim() === "") return null;
-    const chemin = it.fichier.trim();
-    if(!chemin.startsWith("/assets/img/") && !chemin.startsWith("assets/img/")) return null;
-    const abs = chemin.startsWith("/") ? chemin : "/" + chemin;
+    const abs = cheminImage(it?.fichier);
+    if(!abs) return null;
 
     const li  = document.createElement("li");
     const fig = document.createElement("figure");
@@ -236,11 +253,96 @@ function monterGalerie(items){
   env.hidden = false;
 }
 
+/* ── ④ Membres du groupe ──────────────────────────────────────
+   Le HTML sert quatre membres EN DUR : c'est le repli indexable,
+   present sans JavaScript. On ne le remplace que si le CMS a
+   vraiment des donnees — chaque sortie prematuree laisse donc le
+   repli en place, et c'est tout le mecanisme.
+
+   Limite assumee : un roster vide EXPRES est indistinguable d'un
+   roster jamais renseigne, les deux valant {"membres":[]}. Vider la
+   formation depuis l'administration n'est pas supporte. */
+function carteMembre(m){
+  const prenom = m.prenom.trim();
+  const li = document.createElement("li");
+
+  const photo = cheminImage(m.photo);
+  if(photo){
+    const {pic, img} = pictureAvecDerives(photo, {surPerte: () => pic.remove()});
+    img.alt = `${prenom}, membre de Mango Sunday`;
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.width = 400;    // reservation de place, pas la taille reelle
+    img.height = 400;
+    li.append(pic);
+  }
+
+  const nom = document.createElement("span");
+  nom.className = "prenom";
+  nom.textContent = prenom;
+  li.append(nom);
+
+  if(!estPlaceholder(m.instruments)){
+    const inst = document.createElement("span");
+    inst.className = "instrument";
+    inst.textContent = m.instruments.trim();
+    li.append(inst);
+  }
+
+  // Meme idiome que la bio longue du groupe : le texte est dans le
+  // DOM donc indexable, mais il ne rallonge pas la section.
+  if(!estPlaceholder(m.bio)){
+    const details = document.createElement("details");
+    details.className = "bio-membre";
+    const resume = document.createElement("summary");
+    resume.textContent = "Bio";
+    const corps = document.createElement("div");
+    const p = document.createElement("p");
+    p.textContent = m.bio.trim();
+    corps.append(p);
+    details.append(resume, corps);
+    li.append(details);
+  }
+
+  // Le prenom passe en contexte : sans lui, quatre membres donneraient
+  // quatre liens « Instagram » identiques au lecteur d'ecran.
+  const liens = Object.entries(m.liens || {})
+    .map(([cle, url]) => lienPlateforme(cle, url, prenom))
+    .filter(Boolean);
+  if(liens.length){
+    const ul = document.createElement("ul");
+    ul.className = "reseaux reseaux-membre";
+    ul.replaceChildren(...liens);
+    li.append(ul);
+  }
+
+  return li;
+}
+
+/** Renvoie les membres reellement montes, pour le JSON-LD. */
+function monterMembres(items){
+  const ul = $("[data-membres]");
+  const valides = (Array.isArray(items) ? items : [])
+    .filter(m => typeof m?.prenom === "string" && !estPlaceholder(m.prenom));
+
+  if(!ul || valides.length === 0) return [];   // le repli statique reste
+
+  ul.replaceChildren(...valides.map(carteMembre));
+  return valides;
+}
+
 /* ── ⑤ Donnees structurees ────────────────────────────────────
-   Le bloc MusicGroup est deja dans le HTML servi et valide seul.
-   On l'enrichit de sameAs, puis on ajoute un MusicEvent par date.
+   Le bloc MusicGroup est deja dans le HTML servi et valide seul, avec
+   sa formation de repli. On l'enrichit de sameAs et, si le CMS en a,
+   de la vraie liste des membres ; puis on ajoute un MusicEvent par
+   date dans un script SEPARE.
    Google execute le JavaScript et prend en charge le JSON-LD injecte. */
-function enrichirJSONLD(liens, dates){
+/* L'origine de production, deja cablee en dur dans le socle HTML et
+   dans le sitemap. Volontairement PAS l'origine workers.dev : voir
+   CLAUDE.md, « the production domain is already wired in everywhere ». */
+const SITE = "https://mangosunday.com";
+
+function enrichirJSONLD(liens, dates, membres){
   const socle = $("#ld-groupe");
   if(!socle) return;
 
@@ -252,8 +354,26 @@ function enrichirJSONLD(liens, dates){
     .map(u => urlSure(u))
     .filter(Boolean)
     .map(u => u.href);
-  if(sameAs.length){
-    groupe.sameAs = sameAs;
+  if(sameAs.length) groupe.sameAs = sameAs;
+
+  /* Les membres venus du CMS. Le socle HTML en porte deja une copie
+     statique : on ne l'ecrase que par une liste reelle. */
+  const member = (membres || []).map(m => {
+    const p = {"@type":"Person", "name": m.prenom.trim()};
+    if(!estPlaceholder(m.instruments)) p.description = m.instruments.trim();
+    const photo = cheminImage(m.photo);
+    if(photo) p.image = SITE + photo;
+    const perso = Object.values(m.liens || {})
+      .map(u => urlSure(u)).filter(Boolean).map(u => u.href);
+    if(perso.length) p.sameAs = perso;
+    return p;
+  });
+  if(member.length) groupe.member = member;
+
+  /* UNE seule reecriture, et surtout PAS a l'interieur du test sur
+     sameAs : les membres disparaitraient des que le groupe n'aurait
+     plus aucun lien valide. */
+  if(sameAs.length || member.length){
     socle.textContent = JSON.stringify(groupe, null, 2);
   }
 
@@ -269,8 +389,8 @@ function enrichirJSONLD(liens, dates){
       "eventStatus": d.complet === true
         ? "https://schema.org/EventScheduled"
         : "https://schema.org/EventScheduled",
-      "performer": {"@id":"https://mangosunday.com/#groupe"},
-      "organizer": {"@id":"https://mangosunday.com/#groupe"},
+      "performer": {"@id":`${SITE}/#groupe`},
+      "organizer": {"@id":`${SITE}/#groupe`},
       "location": {
         "@type":"Place",
         "name": estPlaceholder(d.salle) ? "À confirmer" : d.salle.trim(),
@@ -339,17 +459,22 @@ async function demarrer(){
   animerBandes();
 
   try{
-    // Le CMS serialise une liste de premier niveau en objet clave par le
-    // nom du champ : {"dates":[...]} et {"photos":[...]}. Les deux sont
-    // donc deballes ici. Pour la galerie, « || data » tolere en plus la
-    // forme tableau nu, encore en place tant que rien n'a ete publie.
-    const [site, dates, galerie] = await Promise.all([
+    // Le CMS serialise une liste de premier niveau en objet clave par
+    // le nom du champ : {"dates":[...]}, {"photos":[...]} et
+    // {"membres":[...]}. Les trois sont donc deballes ici. Pour la
+    // galerie et les membres, « || data » tolere en plus la forme
+    // tableau nu, encore en place tant que rien n'a ete publie.
+    //
+    // Les quatre lectures partent ensemble : ajouter une collection
+    // ne coute AUCUN aller-retour supplementaire.
+    const [site, dates, galerie, membres] = await Promise.all([
       lireJSON("/content/site.json").catch(err => {
         console.warn("site.json indisponible, blocs laissés en état statique.", err);
         return {};
       }),
       lireJSON("/content/dates.json").then(data => data.dates || []).catch(() => []),
-      lireJSON("/content/galerie.json").then(data => data.photos || data).catch(() => [])
+      lireJSON("/content/galerie.json").then(data => data.photos || data).catch(() => []),
+      lireJSON("/content/membres.json").then(data => data.membres || data).catch(() => [])
     ]);
 
     const ecoute = site.ecoute || {};
@@ -360,8 +485,9 @@ async function demarrer(){
     monterPlateformes(liens);
     monterReseaux(liens);
     monterGalerie(galerie);
+    const equipe = monterMembres(membres);
     const aVenir = monterDates(dates);
-    enrichirJSONLD(liens, aVenir);
+    enrichirJSONLD(liens, aVenir, equipe);
 
     monterFacadeAudio({
       conteneur:  $("[data-lecteur-audio]"),
