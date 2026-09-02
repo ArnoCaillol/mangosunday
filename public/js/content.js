@@ -12,7 +12,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { monterFacadeAudio, monterFacadeVideo, urlSure, idYoutube, etiquette,
-         pictureAvecDerives } from "./facades.js";
+         pictureAvecDerives, iconePlateforme } from "./facades.js";
 
 const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -87,8 +87,19 @@ function lienPlateforme(cle, url, contexte){
   a.href = u.href;
   a.target = "_blank";
   a.rel = "noopener noreferrer";
-  a.textContent = etiquette(cle);
-  const quoi = contexte ? `${etiquette(cle)} de ${contexte}` : etiquette(cle);
+  const nom   = etiquette(cle);
+  const icone = iconePlateforme(cle);
+  if(icone){
+    a.classList.add("lien-icone");
+    a.title = nom;               // le nom reste lisible au survol
+    a.append(icone);
+  }else{
+    // Plateforme sans icone dessinee : on retombe sur le libelle en
+    // clair plutot que d'afficher un lien muet.
+    a.textContent = nom;
+  }
+
+  const quoi = contexte ? `${nom} de ${contexte}` : nom;
   a.setAttribute("aria-label", `${quoi} — ouvre un nouvel onglet`);
   li.append(a);
   return li;

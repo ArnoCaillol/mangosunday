@@ -208,6 +208,105 @@ export function monterFacadeVideo({conteneur, bouton, id, titre, vide}){
   }, {once:true});
 }
 
+/* ── Icones des plateformes ───────────────────────────────────
+   Dessinees a la main, au trait, dans un viewBox 24x24. Aucune
+   dependance : la CSP est « img-src 'self' data: » et le site ne
+   declenche aucune requete tierce, donc ni CDN d'icones ni police
+   d'icones ne sont possibles. Un sprite SVG externe ne conviendrait
+   pas non plus : le contenu d'un <use> externe n'herite pas du
+   currentColor du document.
+
+   Le trait de 2px est celui des bordures du site : les icones parlent
+   le meme langage que les boutons et les pastilles.
+
+   Construites avec createElementNS et setAttribute — innerHTML n'est
+   jamais utilise ici, meme pour du balisage que nous ecrivons.
+
+   « plein » remplit la forme au lieu de la tracer. Les parametres
+   visuels (epaisseur, jointures) vivent dans site.css. */
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+const ICONES = {
+  // Cercle et trois ondes.
+  spotify: [
+    ["circle", {cx:12, cy:12, r:9}],
+    ["path", {d:"M6.4 8.7c4.2-1.4 8.8-.7 12.1 1.6"}],
+    ["path", {d:"M7 12c3.4-1.1 7.2-.6 10.1 1.2"}],
+    ["path", {d:"M7.8 15.2c2.6-.9 5.5-.6 7.8.8"}]
+  ],
+  // Le logo EST un parallelogramme.
+  bandcamp: [
+    ["path", {d:"M3.6 16.6 10.4 7.4H20.4l-6.8 9.2z", plein:true}]
+  ],
+  // Ecran arrondi et triangle de lecture.
+  youtube: [
+    ["rect", {x:2.5, y:5.5, width:19, height:13, rx:4}],
+    ["path", {d:"M10.8 9.4 16 12l-5.2 2.6z", plein:true}]
+  ],
+  // Carre arrondi, objectif, temoin.
+  instagram: [
+    ["rect", {x:3.2, y:3.2, width:17.6, height:17.6, rx:5}],
+    ["circle", {cx:12, cy:12, r:4}],
+    ["circle", {cx:17, cy:7, r:1.15, plein:true}]
+  ],
+  // Egaliseur a cinq colonnes. APPROXIMATION assumee : la marque
+  // Deezer est faite de barres, mais leur disposition exacte n'est
+  // pas reproduite ici. L'icone se lit comme une plateforme musicale,
+  // ce qui suffit a son role.
+  deezer: [
+    ["rect", {x:2.6, y:13.6, width:3.2, height:5.8, rx:1, plein:true}],
+    ["rect", {x:7.0, y:9.4, width:3.2, height:10, rx:1, plein:true}],
+    ["rect", {x:11.4, y:4.6, width:3.2, height:14.8, rx:1, plein:true}],
+    ["rect", {x:15.8, y:11.2, width:3.2, height:8.2, rx:1, plein:true}],
+    ["rect", {x:20.2, y:7.6, width:3.2, height:11.8, rx:1, plein:true}]
+  ],
+  // Badge d'application et note : le vocabulaire d'Apple Music.
+  apple: [
+    ["rect", {x:3.2, y:3.2, width:17.6, height:17.6, rx:5}],
+    ["circle", {cx:10, cy:15.4, r:2.1, plein:true}],
+    ["path", {d:"M12.1 15.4V9.2l4.4-1.3v2.3l-4.4 1.3"}]
+  ],
+  // Croche a hampe et drapeau, glyphe de TikTok.
+  tiktok: [
+    ["circle", {cx:10.2, cy:16.2, r:3.3}],
+    ["path", {d:"M13.5 16.2V4.4c.6 2.4 2.4 3.9 4.8 4.1"}]
+  ],
+  // Globe generique pour « Site perso ».
+  site: [
+    ["circle", {cx:12, cy:12, r:9}],
+    ["path", {d:"M3 12h18"}],
+    ["path", {d:"M12 3c2.6 2.4 4 5.6 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.6-4-9s1.4-6.6 4-9z"}]
+  ]
+};
+
+/** Renvoie l'icone d'une plateforme, ou null si elle n'en a pas.
+ *  Le null est utile : l'appelant retombe alors sur le libelle en
+ *  clair, ce qui evite qu'une plateforme ajoutee plus tard n'affiche
+ *  un lien muet. */
+export function iconePlateforme(cle){
+  const formes = ICONES[cle];
+  if(!formes) return null;
+
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");   // le lien porte l'aria-label
+  svg.setAttribute("focusable", "false");    // sinon tabulable sous IE/Edge
+
+  for(const [balise, attrs] of formes){
+    const forme = document.createElementNS(SVG_NS, balise);
+    for(const [nom, valeur] of Object.entries(attrs)){
+      if(nom === "plein") continue;
+      forme.setAttribute(nom, String(valeur));
+    }
+    if(attrs.plein){
+      forme.setAttribute("fill", "currentColor");
+      forme.setAttribute("stroke", "none");
+    }
+    svg.append(forme);
+  }
+  return svg;
+}
+
 export function etiquette(cle){
   return ({
     spotify:"Spotify", bandcamp:"Bandcamp", youtube:"YouTube",

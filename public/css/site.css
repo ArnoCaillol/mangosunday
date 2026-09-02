@@ -110,6 +110,27 @@ img{max-width:100%; height:auto; display:block}
 }
 .nuit .ph{ color:var(--mangue); border-color:var(--mangue); background:rgba(226,154,38,.1) }
 
+/* ── Liens reduits a leur icone ───────────────────────────────
+   Le nom en clair est remplace par le logo, dessine dans facades.js.
+   L'intitule accessible reste porte par l'aria-label du lien et le
+   title l'affiche au survol : rien ne se perd. La classe est posee
+   par le JS et non par un selecteur global, parce qu'une plateforme
+   sans icone dessinee garde son libelle en texte.
+
+   L'epaisseur de 2px est celle des bordures du site, pour que les
+   icones parlent le meme langage que les boutons. */
+.lien-icone svg{
+  width:22px; height:22px; display:block;
+  fill:none; stroke:currentColor; stroke-width:2;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+.plateformes a.lien-icone,
+.reseaux a.lien-icone{ padding:10px 13px }
+/* Apres .reseaux : les deux classes sont co-appliquees sur les liens
+   d'un membre, a specificite egale, donc l'ordre tranche. */
+.reseaux-membre a.lien-icone{ padding:6px 9px }
+.reseaux-membre .lien-icone svg{ width:18px; height:18px }
+
 /* ── Voile d'attente : couvre un bloc volatil tant que l'hydratation
       n'a pas eu lieu, pour qu'une connexion lente ne montre jamais un
       libelle de repli en train d'etre remplace.
@@ -476,8 +497,9 @@ strong{font-weight:700}
 
 /* Pastilles du pied de page, en plus compact. Texte en encre sur
    fond clair : jamais mangue ni orange, regle de contraste. */
-.reseaux-membre{ margin-top:10px; gap:6px }
-.reseaux-membre a{ min-height:36px; padding:5px 10px; font-size:.8rem }
+/* Les pastilles .reseaux-membre sont stylees avec .reseaux, en
+   zone ⑦ : le modificateur doit suivre sa classe de base, sinon il
+   se fait ecraser a specificite egale. */
 
 .galerie{
   list-style:none; margin:0; padding:0;
@@ -558,6 +580,14 @@ strong{font-weight:700}
   font-weight:600; font-size:.88rem; text-decoration:none;
 }
 .reseaux a:hover{ background:var(--mangue) }
+
+/* Variante compacte pour les cartes de membre. Doit rester APRES
+   .reseaux : les deux classes sont co-appliquees et de meme
+   specificite, donc seul l'ordre tranche. La hauteur minimale n'est
+   volontairement PAS reduite — les 44px de .reseaux sont la bonne
+   cible tactile, et c'est le seul reglage qu'on laisse hériter. */
+.reseaux-membre{ margin-top:10px; gap:6px }
+.reseaux-membre a{ padding:5px 10px; font-size:.8rem }
 .legal{ margin-top:22px; display:flex; flex-wrap:wrap; gap:8px 20px }
 .legal a{ font-size:.87rem; color:var(--brun-encre); min-height:44px; display:inline-flex; align-items:center }
 .copy{
