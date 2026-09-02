@@ -126,10 +126,26 @@ img{max-width:100%; height:auto; display:block}
 }
 .plateformes a.lien-icone,
 .reseaux a.lien-icone{ padding:10px 13px }
-/* Apres .reseaux : les deux classes sont co-appliquees sur les liens
-   d'un membre, a specificite egale, donc l'ordre tranche. */
-.reseaux-membre a.lien-icone{ padding:6px 9px }
-.reseaux-membre .lien-icone svg{ width:18px; height:18px }
+/* Dans une carte de membre, la pastille bordee ajoutait un TROISIEME
+   rectangle arrondi autour d'icones qui en sont deja un — Instagram
+   et Apple Music sont dessines comme des badges carres. On obtenait
+   carte > pastille > logo, une poupee russe. Le chrome est donc
+   retire ici : la carte fait office de conteneur.
+
+   Les rangees du groupe gardent leurs pastilles : elles se lisent
+   comme un ensemble et n'ont pas de boite parente.
+
+   La specificite (0,3,0) suffit a battre .reseaux a de la zone ⑦,
+   sans dependre de l'ordre des regles. */
+.reseaux-membre a.lien-icone{
+  border:none; background:none; box-shadow:none;
+  padding:4px; min-height:0;
+  color:var(--brun-encre);
+}
+.reseaux-membre a.lien-icone:hover{ background:none; color:var(--encre) }
+/* 20px + 4px de marge interne = cible de 28px, au-dessus du minimum
+   de 24px du critere WCAG 2.5.8. */
+.reseaux-membre .lien-icone svg{ width:20px; height:20px }
 
 /* ── Voile d'attente : couvre un bloc volatil tant que l'hydratation
       n'a pas eu lieu, pour qu'une connexion lente ne montre jamais un
@@ -450,7 +466,13 @@ strong{font-weight:700}
      contenu, ce qui est le cas du repli statique. */
   align-items:start;
 }
-.membres li{
+/* ENFANT DIRECT, et c'est indispensable. En descendance, la regle
+   atteignait aussi le <li> du <ul> imbrique des reseaux : chaque lien
+   social heritait du traitement complet d'une carte — bordure, rayon,
+   fond, ombre portee — et l'icone se retrouvait cerclee deux fois de
+   plus que prevu. Toute regle de .membres visant la carte doit passer
+   par « > ». */
+.membres > li{
   border:2px solid var(--encre); border-radius:8px;
   background:var(--blanc-casse); padding:12px 14px;
   box-shadow:3px 3px 0 0 var(--sable);
@@ -583,10 +605,14 @@ strong{font-weight:700}
 
 /* Variante compacte pour les cartes de membre. Doit rester APRES
    .reseaux : les deux classes sont co-appliquees et de meme
-   specificite, donc seul l'ordre tranche. La hauteur minimale n'est
-   volontairement PAS reduite — les 44px de .reseaux sont la bonne
-   cible tactile, et c'est le seul reglage qu'on laisse hériter. */
-.reseaux-membre{ margin-top:10px; gap:6px }
+   specificite, donc seul l'ordre tranche.
+
+   Ces deux regles ne concernent que le REPLI EN TEXTE, c'est-a-dire
+   une plateforme absente de la table d'icones : elles heritent alors
+   les 44px de .reseaux, qui sont la bonne cible tactile. Les liens
+   a icone, eux, sont traites plus haut avec .lien-icone et ramenes
+   a 28px. */
+.reseaux-membre{ margin-top:10px; gap:8px }
 .reseaux-membre a{ padding:5px 10px; font-size:.8rem }
 .legal{ margin-top:22px; display:flex; flex-wrap:wrap; gap:8px 20px }
 .legal a{ font-size:.87rem; color:var(--brun-encre); min-height:44px; display:inline-flex; align-items:center }
