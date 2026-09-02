@@ -254,14 +254,16 @@ function monterGalerie(items){
 }
 
 /* ── ④ Membres du groupe ──────────────────────────────────────
-   Le HTML sert quatre membres EN DUR : c'est le repli indexable,
-   present sans JavaScript. On ne le remplace que si le CMS a
-   vraiment des donnees — chaque sortie prematuree laisse donc le
-   repli en place, et c'est tout le mecanisme.
+   membres.json est la SEULE source : le HTML ne sert qu'une
+   enveloppe masquee et un <ul> vide. Aucune formation en dur, donc
+   rien qui puisse devenir perime, et vider la liste depuis
+   l'administration fait bien disparaitre le bloc — meme regle que
+   la galerie, « un champ vide fait disparaitre le bloc ».
 
-   Limite assumee : un roster vide EXPRES est indistinguable d'un
-   roster jamais renseigne, les deux valant {"membres":[]}. Vider la
-   formation depuis l'administration n'est pas supporte. */
+   Contrepartie : les prenoms ne sont plus dans la premiere reponse.
+   Arbitrage assume, les prenoms d'un groupe n'ayant pas de valeur
+   de recherche ; ce qui compte pour le referencement (titre, meta,
+   h1, baseline, bio longue, MusicGroup) reste en dur. */
 function carteMembre(m){
   const prenom = m.prenom.trim();
   const li = document.createElement("li");
@@ -321,13 +323,15 @@ function carteMembre(m){
 
 /** Renvoie les membres reellement montes, pour le JSON-LD. */
 function monterMembres(items){
-  const ul = $("[data-membres]");
+  const ul  = $("[data-membres]");
+  const env = $("[data-bloc-membres]");
   const valides = (Array.isArray(items) ? items : [])
     .filter(m => typeof m?.prenom === "string" && !estPlaceholder(m.prenom));
 
-  if(!ul || valides.length === 0) return [];   // le repli statique reste
+  if(!ul || valides.length === 0) return [];   // le bloc reste masque
 
   ul.replaceChildren(...valides.map(carteMembre));
+  if(env) env.hidden = false;
   return valides;
 }
 

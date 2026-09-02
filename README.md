@@ -154,8 +154,7 @@ et sur fond tireté.
 - [ ] `[VILLE]` — baseline du premier écran, **et** `<title>` + méta-description
 - [ ] `[BIO COURTE]` — via l'administration
 - [ ] `[BIO LONGUE]` — dans `index.html`, section « Le groupe »
-- [x] `[PRÉNOM]` et `[instrument]` × 4 — via l'administration ; `index.html`
-      garde la formation en repli, à retoucher si elle change vraiment
+- [x] `[PRÉNOM]` et `[instrument]` × 4 — via l'administration, seule source
 - [x] `[TITRE DU MORCEAU]` et son lien — via l'administration
 - [x] `[VIDÉO LIVE À VENIR]` — via l'administration
 - [x] Liens des plateformes et réseaux — via l'administration
