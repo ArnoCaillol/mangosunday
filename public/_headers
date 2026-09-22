@@ -28,10 +28,6 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
-  # TEMPORAIRE — recette avant le branchement du domaine.
-  # A retirer le jour ou mangosunday.com est branche, sinon le site
-  # reste invisible des moteurs de recherche.
-  X-Robots-Tag: noindex
 
 # ── CSP du site public, une regle par page HTML ──
 /
