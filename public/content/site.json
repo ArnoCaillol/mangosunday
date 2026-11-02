@@ -1,7 +1,7 @@
 {
   "bandeau": {
-    "actif": false,
-    "texte": "",
+    "actif": true,
+    "texte": "Concert le 20 mars au Leda Atomica (Marseille)",
     "lien": ""
   },
   "ecoute": {
